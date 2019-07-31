@@ -1,9 +1,9 @@
 #include "stdafx.h"
-//#include "RobotCalibration_Kinect2.h"
+#include "RobotCalibration_Kinect2.h"
 
 
 int main() {
-	///CalibrationFunc();
+	CalibrationFunc();
 
 	return 0;
 }

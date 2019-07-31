@@ -28,15 +28,16 @@ public:
 	*   @param  internal_file	保存路径
 	*   @reference link:https://my.oschina.net/abcijkxyz/blog/787659
 	*/
-	void internal_reference_calibration(std::string img_files, std::string internal_file);
+	void internal_reference_calibration(std::string img_files, std::string internal_file, Camera_Intrinsics& cam_in, double distCoeffD[5]);
 
 
 	/*
-	*	@brief:	计算相机外参
+	*	@brief:	计算相机外参(路径下所有图片对应的外参)
 	*	@param:	imgpath		图片路径
 	*	@param:	calibFile	存储计算结果路径
 	*/
-	void external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, std::string calibFile);
+	void external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, std::string calibFile, std::vector<cv::Mat>& vec_res);
+
 
 private:
 

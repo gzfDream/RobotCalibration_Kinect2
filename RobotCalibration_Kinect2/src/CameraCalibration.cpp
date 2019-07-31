@@ -164,7 +164,8 @@ cv::Mat CameraCalibration::process_transMatrix(cv::Mat rvec, cv::Mat tvec) {
 
 
 //计算外参
-void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, std::string calibFile) {
+void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], 
+														std::string imgpath, std::string calibFile, std::vector<cv::Mat>& vec_res) {
 
 	// 设置相机内参
 	cv::Matx33f camera_matrix;
@@ -189,6 +190,8 @@ void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 		corner_detection(img_files[i]);
 		calibration(camera_matrix, distortion_coefficients, rvec, tvec);
 		trans_mat = process_transMatrix(rvec, tvec);
+		vec_res.push_back(trans_mat);
+
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++)
 			{
@@ -209,7 +212,7 @@ void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 
 
 // 计算相机内参
-void CameraCalibration::internal_reference_calibration(std::string img_path, std::string internal_file) {
+void CameraCalibration::internal_reference_calibration(std::string img_path, std::string internal_file, Camera_Intrinsics& cam_in, double distCoeffD[5]) {
 	//ifstream fin("calibdata.txt"); /* 标定所用图像文件的路径 */
 
 	std::vector<std::string> img_files;
@@ -383,4 +386,12 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 	cv::Mat mapy = cv::Mat(image_size, CV_32FC1);
 	cv::Mat R = cv::Mat::eye(3, 3, CV_32F);
 	std::cout << "保存结束" << std::endl;
+
+	cam_in.FLX = cameraMatrix.at<float>(0, 0);
+	cam_in.FLY = cameraMatrix.at<float>(1, 1);
+	cam_in.PPX = cameraMatrix.at<float>(0, 2);
+	cam_in.PPY = cameraMatrix.at<float>(1, 2);
+
+	for(int i=0; i<distCoeffs.cols; i++)
+		distCoeffD[i] = distCoeffs.at<float>(0,i);
 }

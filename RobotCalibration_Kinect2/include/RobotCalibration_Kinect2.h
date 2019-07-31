@@ -12,7 +12,7 @@ void printMenu() {
 	printf("  i  计算内参\n");
 	printf("  e  计算外参\n");
 	printf("  p  标定（棋盘格在机械臂上）\n");
-	printf("  s  六点法标定");
+	printf("  s  三点法标定");
 	printf("  q  退出\n");
 }
 
@@ -62,28 +62,68 @@ void CalibrationFunc() {
 			ImgProcess imgP;
 			HRESULT hr = imgP.init_kinect();
 
-			imgP.getHDImage("../data/img/");
+			imgP.getHDImage(cam_cal_file);
+
 			break;
 		}
+
 		case 'i': //棋盘格相机标定
 			cout << "开始获得相机内参" << endl;
-			cal.internal_reference_calibration(img_internal_file, cam_internal_file);
+			cal.internal_reference_calibration(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
 			break;
-		
-		case 'e':
+
+		case 'e': 
+		{
 			cout << "开始获得相机外参" << endl;
-			cal.external_reference_calibration(camera_ins_H, distCoeffD, cam_cal_file, cam_external_file);
+			vector<cv::Mat> res;
+			cal.external_reference_calibration(camera_ins_H, distCoeffD, cam_cal_file, cam_external_file, res);
 			break;
+		}
+			
 		case 'p':
 		{
 			cout << "获得标定结果" << endl;
+			cv::Mat res_mat;
 			CalibrationMethods c;
-			c.Method_BoardOnRobot(robot_pose_file, cam_external_file, result_file);
+			c.Method_BoardOnRobot(robot_pose_file, cam_external_file, result_file, res_mat);
 			break;
 		}
-		
+
 		case 's':
+		{
+			cout << "开始三点法标定" << endl;
+			cout << "请示教机械臂到标定板坐标系原点，x轴一点，xoy平面内一点（不一定在y轴）" << endl;
+			cv::Point3d pos_O, pos_X, pos_Y;
+
+			cout << "please input the three points(X,Y,Z):" << endl;
+			cout << "point O:" << endl;
+			cin >> pos_O.x >> pos_O.y >> pos_O.z;
+
+			cout << "point X:" << endl;
+			cin >> pos_X.x >> pos_X.y >> pos_X.z;
+
+			cout << "point Y:" << endl;
+			cin >> pos_Y.x >> pos_Y.y >> pos_Y.z;
+
+			cout << "用相机拍摄标定板, 可拍摄多张" << endl;
+			//初始化相机Kinect
+			ImgProcess imgP;
+			HRESULT hr = imgP.init_kinect();
+			imgP.getHDImage(cam_cal_file);
+
+			vector<cv::Mat> res;
+			cal.external_reference_calibration(camera_ins_H, distCoeffD, cam_cal_file, cam_external_file, res);
+
+			cv::Mat ex_mat, res_mat;
+			for (auto mat_ : res)
+				ex_mat += mat_;
+
+			ex_mat = ex_mat / res.size();
+
+			CalibrationMethods c;
+			c.Method_ThreePointsCalibration(pos_O, pos_X, pos_Y, ex_mat, res_mat);
 			break;
+		}
 
 		case 'q':
 			running = false;

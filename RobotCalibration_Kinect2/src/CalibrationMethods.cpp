@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CalibrationMethods.h"
-
+#include <opencv2/core/eigen.hpp>
 
 CalibrationMethods::CalibrationMethods()
 {
@@ -72,7 +72,8 @@ cv::Mat vector_To_Mat(Mat&A)
 	return dst;
 }
 
-//优化的手眼标定
+
+//优化的手眼标定Ax=xB
 Mat CalibrationMethods::HandEyeMethod(const vector<Mat>Hgij, const vector<Mat>Hcij)
 {
 	CV_Assert(Hgij.size() == Hcij.size());
@@ -135,9 +136,113 @@ Mat CalibrationMethods::HandEyeMethod(const vector<Mat>Hgij, const vector<Mat>Hc
 	return dst;
 }
 
+// 将cv::Point3d转成eigen::vector3d
+Eigen::Vector3d cvPoint3d_eigenVector3d(cv::Point3d p) {
+	Eigen::Vector3d res(p.x, p.y, p.z);
+
+	return res;
+}
+
+// 三点法
+cv::Mat CalibrationMethods::ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY)
+{
+	Eigen::Vector3d O = cvPoint3d_eigenVector3d(pointO);
+	Eigen::Vector3d X = cvPoint3d_eigenVector3d(pointX);
+	Eigen::Vector3d Y = cvPoint3d_eigenVector3d(pointXOY);
+
+	Eigen::Vector3d Xn = X - O;
+	Eigen::Vector3d Yn = Y - O;
+	Eigen::Vector3d Zn = Xn.cross(Yn);
+
+	Xn.normalize();
+	Zn.normalize();
+
+	double d = sqrt(pow(Zn(1), 2) + pow(Zn(2), 2));
+
+	Eigen::Matrix4d Rx(4, 4), Ry(4, 4), Rz(4, 4);
+
+	if (d == 0)
+	{
+		Rx << 1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1;
+	}
+	else {
+		Rx << 1, 0, 0, 0,
+			0, Zn(2) / d, -Zn(1) / d, 0,
+			0, Zn(1) / d, Zn(2) / d, 0,
+			0, 0, 0, 1;
+	}
+	Ry << d, 0, -Zn(0), 0,
+		0, 1, 0, 0,
+		Zn(0), 0, d, 0,
+		0, 0, 0, 1;
+	Eigen::Vector4d X4;
+	X4 << Xn(0), Xn(1), Xn(2), 0;
+
+	Eigen::Vector4d Xt = Ry * Rx * X4;
+	Xt.normalize();
+
+	Rz << Xt(0), Xt(1), 0, 0,
+		-Xt(1), Xt(0), 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
+
+	Eigen::Matrix4d R;
+
+	Rz << Xt(0), -Xt(1), 0, 0,
+		Xt(1), Xt(0), 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1;
+	if (d == 0)
+	{
+		Rx << 1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1;
+	}
+	else
+	{
+		Rx << 1, 0, 0, 0,
+			0, Zn(2) / d, Zn(1) / d, 0,
+			0, -Zn(1) / d, Zn(2) / d, 0,
+			0, 0, 0, 1;
+	}
+	Ry << d, 0, Zn(0), 0,
+		0, 1, 0, 0,
+		-Zn(0), 0, d, 0,
+		0, 0, 0, 1;
+
+	R = Rx * Ry*Rz;
+
+	R(0, 3) = O(0);
+	R(1, 3) = O(1);
+	R(2, 3) = O(2);
+
+	cout << R << endl;
+
+	// 输出
+	/*std::ofstream ofsCalib("../data/robot2cal.txt");
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++)
+		{
+			ofsCalib << R(i, j) << " ";
+		}
+		ofsCalib << std::endl;
+	}
+	
+	ofsCalib.close();
+	*/
+
+	cv::Mat baseHcal;
+	cv::eigen2cv(R, baseHcal);
+	
+	return baseHcal;
+}
 
 
-cv::Mat CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_cal, std::string result_file) {
+void CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_cal, std::string result_file, cv::Mat& m_result) {
 
 	cv::Mat Hcg(4, 4, CV_64FC1);
 	vector<cv::Mat> Hgij;
@@ -174,7 +279,8 @@ cv::Mat CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string c
 
 	cout << "Hcg: \n" << Hcg << endl;
 
-	cv::Mat m_result = Hcg.inv();
+	// camHbase -> baseHcam
+	m_result = Hcg.inv();
 	cout << "result: \n" << m_result << endl;
 	std::ofstream ofsCalib(result_file);
 	for (int i = 0; i < 4; i++) {
@@ -186,5 +292,15 @@ cv::Mat CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string c
 	}
 
 	ofsCalib.close();
-	return m_result;
+	return;
+}
+
+
+void CalibrationMethods::Method_ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY, cv::Mat camHcal, cv::Mat& baseHcam)
+{
+	cv::Mat baseHcal = ThreePointsCalibration(pointO, pointX, pointXOY);
+
+	// cv::Mat baseHcam;
+	baseHcam = baseHcal * (camHcal.inv());
+	return;
 }
