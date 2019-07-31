@@ -1,7 +1,6 @@
-
 #include "stdafx.h"
 
-#include "CalChessboard.h"
+#include "CameraCalibration.h"
 #include <stdio.h>  
 #include <io.h>  
 #include <Windows.h> 
@@ -37,7 +36,7 @@ void getAllFiles(std::string path, std::vector<std::string>& files)
 }
 
 
-CalChessboard::CalChessboard(double &markerRealSize)
+CameraCalibration::CameraCalibration(double &markerRealSize)
 {
 	m_markerCorners3d.push_back(cv::Point3f(0., 0., 0.));
 	m_markerCorners3d.push_back(cv::Point3f(4. * markerRealSize, 0., 0.));
@@ -52,12 +51,12 @@ CalChessboard::CalChessboard(double &markerRealSize)
 }
 
 
-CalChessboard::~CalChessboard()
+CameraCalibration::~CameraCalibration()
 {
 }
 
 
-void CalChessboard::corner_detection(std::string &imgpath) {
+void CameraCalibration::corner_detection(std::string &imgpath) {
 	//cv::Mat img_color = cv::imread(imgpath, cv::IMREAD_COLOR);
 	//翻转
 	//flip(img_color, image_color, 1);
@@ -99,7 +98,7 @@ void CalChessboard::corner_detection(std::string &imgpath) {
 
 
 // 计算一张图片对应的外参
-void CalChessboard::calibration(cv::Matx33f camera_matrix, cv::Matx<float, 5, 1> distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec) {
+void CameraCalibration::calibration(cv::Matx33f camera_matrix, cv::Matx<float, 5, 1> distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec) {
 
 	for (int i = 0; i < m_markerCorners2d.size(); i++)
 	{
@@ -134,7 +133,7 @@ void CalChessboard::calibration(cv::Matx33f camera_matrix, cv::Matx<float, 5, 1>
 }
 
 
-cv::Mat CalChessboard::process_transMatrix(cv::Mat rvec, cv::Mat tvec) {
+cv::Mat CameraCalibration::process_transMatrix(cv::Mat rvec, cv::Mat tvec) {
 	cv::Mat trans_mat(4, 4, CV_32F), rotM;
 
 	Rodrigues(rvec, rotM);
@@ -165,11 +164,16 @@ cv::Mat CalChessboard::process_transMatrix(cv::Mat rvec, cv::Mat tvec) {
 
 
 //计算外参
-cv::Mat CalChessboard::external_reference_calibration(double camD[9], double distCoeffD[5], std::string &imgpath, std::string &calibFile) {
+void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, std::string calibFile) {
 
 	// 设置相机内参
 	cv::Matx33f camera_matrix;
 	cv::Matx<float, 5, 1> distortion_coefficients; 
+
+	double camD[9] = { camera_ins_H.FLX, 0, camera_ins_H.PPX,
+							0, camera_ins_H.FLY, camera_ins_H.PPY,
+							0, 0, 1 };
+
 	camera_matrix = cv::Mat(3, 3, CV_64FC1, camD);
 	distortion_coefficients = cv::Mat(5, 1, CV_64FC1, distCoeffD);
 
@@ -199,14 +203,18 @@ cv::Mat CalChessboard::external_reference_calibration(double camD[9], double dis
 	}
 
 	ofsCalib.close();
-	return trans_mat;
+	return;
 }
 
 
 
 // 计算相机内参
-void CalChessboard::internal_reference_calibration(std::vector<std::string> img_files, std::string internal_file) {
+void CameraCalibration::internal_reference_calibration(std::string img_path, std::string internal_file) {
 	//ifstream fin("calibdata.txt"); /* 标定所用图像文件的路径 */
+
+	std::vector<std::string> img_files;
+
+	getAllFiles(img_path, img_files);
 	std::ofstream fout(internal_file);  /* 保存标定结果的文件 */
 													 //读取每一幅图像，从中提取出角点，然后对角点进行亚像素精确化	
 	std::cout << "开始提取角点………………";

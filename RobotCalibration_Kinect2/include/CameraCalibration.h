@@ -1,4 +1,5 @@
 #pragma once
+
 /*
 * brief: 标定相机内参、外参
 * author： gzf
@@ -9,26 +10,25 @@
 #include <opencv2/opencv.hpp>
 #include <fstream>
 #include <iostream>
-class CalChessboard
+class CameraCalibration
 {
 public:
 	
 	/*
 	*	@brief:	构造函数
-	*	@param:	imgpath		图片路径
-	*	@param:	calibFile	存储计算结果路径
+	*	@param:	markerRealSize		棋盘格真实尺寸（厘米）
 	*/
-	CalChessboard(double &markerRealSize);
-	~CalChessboard();
+	CameraCalibration(double &markerRealSize);
+	~CameraCalibration();
 
 
 	/*
 	*	@brief:	计算相机内参
-	*	@param  图片路径vector
-	*   @param  保存路径
+	*	@param  img_files	图片路径
+	*   @param  internal_file	保存路径
 	*   @reference link:https://my.oschina.net/abcijkxyz/blog/787659
 	*/
-	void internal_reference_calibration(std::vector<std::string> img_files, std::string internal_file);
+	void internal_reference_calibration(std::string img_files, std::string internal_file);
 
 
 	/*
@@ -36,7 +36,7 @@ public:
 	*	@param:	imgpath		图片路径
 	*	@param:	calibFile	存储计算结果路径
 	*/
-	cv::Mat external_reference_calibration(double camD[9], double distCoeffD[5], std::string &imgpath, std::string &calibFile);
+	void external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, std::string calibFile);
 
 private:
 

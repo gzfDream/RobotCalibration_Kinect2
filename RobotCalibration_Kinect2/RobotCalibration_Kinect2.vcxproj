@@ -117,16 +117,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\HandEyeMethos.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\CalChessboard.cpp" />
     <ClCompile Include="src\CalibrationMethods.cpp" />
+    <ClCompile Include="src\CameraCalibration.cpp" />
     <ClCompile Include="src\ImgProcess.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\CalChessboard.h" />
     <ClInclude Include="include\CalibrationMethods.h" />
-    <ClInclude Include="include\ImgProcess.h" />
+    <ClInclude Include="include\CameraCalibration.h" />
+    <ClInclude Include="include\HandEyeMethods.h" />
+    <ClInclude Include="include\quaternion.h" />
     <ClInclude Include="include\RobotCalibration_Kinect2.h" />
     <ClInclude Include="include\stdafx.h" />
   </ItemGroup>

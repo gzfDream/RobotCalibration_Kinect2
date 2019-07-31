@@ -18,33 +18,39 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\CalChessboard.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CalibrationMethods.cpp">
+    <ClCompile Include="src\stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\ImgProcess.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\stdafx.cpp">
+    <ClCompile Include="src\CameraCalibration.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CalibrationMethods.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="include\HandEyeMethos.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\quaternion.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\HandEyeMethods.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CameraCalibration.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="include\CalibrationMethods.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\ImgProcess.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\CalChessboard.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="include\RobotCalibration_Kinect2.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

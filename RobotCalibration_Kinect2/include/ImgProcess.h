@@ -5,14 +5,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace std;
-typedef struct _Camera_Intrinsics
-{
-	double FLX;
-	double FLY;
-	double PPX;
-	double PPY;
-}Camera_Intrinsics;
-
 
 
 class ImgProcess
@@ -23,13 +15,8 @@ public:
 
 public:
 	HRESULT init_kinect();
-	Camera_Intrinsics getCameIns();
+	
 	bool getHDImage(string str);
-	cv::Mat calibration(Camera_Intrinsics camera_ins);
-	vector<cv::Point> colorSub(int iLowH, int iHighH, int iLowS, int iHighS, int iLowV, int iHighV);
-	void HSVcheck(string str);
-	bool colorSubRT(int iLowH, int iHighH, int iLowS, int iHighS, int iLowV, int iHighV, vector<cv::Point>& m_center);
-	void FindContours(string str);
 
 private:
 	Camera_Intrinsics getCameIns(ICoordinateMapper* pCoordinateMapper);

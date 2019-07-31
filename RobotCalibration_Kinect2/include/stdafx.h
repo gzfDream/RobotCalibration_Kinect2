@@ -11,6 +11,20 @@
 #include <fstream>  
 #include <string>
 
+#include <Eigen\Dense>
+#include "opencv2/highgui/highgui.hpp"
+#include <opencv2/opencv.hpp>
+
+typedef struct _Camera_Intrinsics
+{
+	double FLX;
+	double FLY;
+	double PPX;
+	double PPY;
+}Camera_Intrinsics;
+
+
+
 // TODO: reference additional headers your program requires here
 template<class Interface>
 inline void SafeRelease(Interface *& pInterfaceToRelease)
