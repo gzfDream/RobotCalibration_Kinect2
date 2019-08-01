@@ -258,6 +258,7 @@ void CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_
 	std::vector<cv::Mat> calHcam;
 	cv::Mat matA(4, 4, CV_64FC1), matB(4, 4, CV_64FC1);
 
+
 	// 读取机械臂末端位姿
 	basHtool = readf_vec(robot);
 	// 读取相机和标定板的变换矩阵
