@@ -242,6 +242,13 @@ cv::Mat CalibrationMethods::ThreePointsCalibration(cv::Point3d pointO, cv::Point
 }
 
 
+/*
+* [calHcam1] * camHrobot*[robotHend1] = [calHcam2] * camHrobot*[robotHend2]
+* inv([calHcam2]) * [calHcam1] * camHrobot = camHrobot * [robotHend2] * inv([robotHend1])
+* matA : inv([calHcam2]) * [calHcam1]
+* matB : [robotHend2] * inv([robotHend1])
+* X : camHrobot
+*/
 void CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_cal, std::string result_file, cv::Mat& m_result) {
 
 	cv::Mat Hcg(4, 4, CV_64FC1);

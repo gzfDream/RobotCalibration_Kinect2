@@ -43,6 +43,11 @@ public:
 	void Method_ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY, cv::Mat camHcal, cv::Mat& baseHcam);
 
 
+	/*
+	*	@brief	精度度量方法1：
+	*
+	*/
+
 private:
 
 	/*
