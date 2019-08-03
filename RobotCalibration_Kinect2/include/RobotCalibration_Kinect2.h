@@ -104,15 +104,6 @@ void CalibrationFunc() {
 
 		case 'o':
 		{
-			/*cv::Mat res_mat_;
-			Eigen::Matrix4d base_mat;
-			base_mat << 0.9878, 0.011699, -0.15533, 0.71708,
-				0.15573, -0.097098, 0.98301, -0.47752,
-				-0.0035819, -0.9952, -0.097734, 0.28021,
-				0, 0, 0, 1;
-
-			cv::eigen2cv(base_mat, res_mat_);*/
-			
 			cv::Mat result;
 			CalibrationMethods c;
 			c.Calibration_Optimization(cam_cal_file, robot_pose_file, res_mat, result);
