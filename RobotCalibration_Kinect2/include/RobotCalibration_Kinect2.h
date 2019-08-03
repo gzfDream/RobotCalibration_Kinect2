@@ -81,6 +81,14 @@ void CalibrationFunc() {
 		case 'e': 
 		{
 			std::cout << "开始获得相机外参" << endl;
+			cout << "-*-*-*-*-是否重新计算相机内参（输入1/0）-*-*-*-*-" << endl;
+			int ok = 0;
+			cin >> ok;
+			if (ok) {
+				std::cout << "开始获得相机内参" << endl;
+				cal.internal_reference_calibration(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
+			}
+
 			vector<cv::Mat> res;
 			cal.external_reference_calibration(camera_ins_H, distCoeffD, cam_cal_file, cam_external_file, res);
 			break;
