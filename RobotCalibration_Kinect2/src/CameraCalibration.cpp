@@ -10,10 +10,11 @@
 // 得到路径下的所有文件名，存到vector中
 void getAllFiles(std::string path, std::vector<std::string>& files)
 {
-	long   hFile = 0;
+	intptr_t   hFile = 0;
 
 	struct _finddata_t fileinfo;
 	std::string p;
+	std::cout << p.assign(path).append("\\*").c_str() << std::endl;
 	if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
 	{
 		do
@@ -57,11 +58,12 @@ CameraCalibration::~CameraCalibration()
 
 
 void CameraCalibration::corner_detection(std::string &imgpath) {
-	//cv::Mat img_color = cv::imread(imgpath, cv::IMREAD_COLOR);
-	//翻转
-	//flip(img_color, image_color, 1);
+	cv::Mat img_color = cv::imread(imgpath, cv::IMREAD_COLOR);
 
-	image_color = cv::imread(imgpath, cv::IMREAD_COLOR);
+	//翻转
+	// flip(img_color, image_color, 1);
+	image_color = img_color;
+
 	cv::Mat image_gray;
 	cv::cvtColor(image_color, image_gray, cv::COLOR_BGR2GRAY);
 
@@ -69,10 +71,11 @@ void CameraCalibration::corner_detection(std::string &imgpath) {
 
 	bool ret = cv::findChessboardCorners(image_gray,
 		cv::Size(6, 9),
-		corners,
-		cv::CALIB_CB_ADAPTIVE_THRESH |
-		CV_CALIB_CB_FAST_CHECK |
-		cv::CALIB_CB_NORMALIZE_IMAGE);
+		corners//,
+		//cv::CALIB_CB_ADAPTIVE_THRESH |
+		//CV_CALIB_CB_FAST_CHECK |
+		//cv::CALIB_CB_NORMALIZE_IMAGE
+	);
 
 	//指定亚像素计算迭代标注  
 	cv::TermCriteria criteria = cv::TermCriteria(
@@ -98,13 +101,13 @@ void CameraCalibration::corner_detection(std::string &imgpath) {
 
 
 // 计算一张图片对应的外参
-void CameraCalibration::calibration(cv::Matx33f camera_matrix, cv::Matx<float, 5, 1> distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec) {
+void CameraCalibration::calibration(const cv::Matx33f& camera_matrix, const cv::Matx<float, 5, 1>& distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec) {
 
 	for (int i = 0; i < m_markerCorners2d.size(); i++)
 	{
 		cv::circle(image_color, m_markerCorners2d[i], 1, cv::Scalar(255, 40 * i, 255), 2);
 	}
-	cv::circle(image_color, m_markerCorners2d[0], 1, cv::Scalar(0, 0, 255), 2);
+	cv::circle(image_color, m_markerCorners2d[0], 1, cv::Scalar(0, 0, 255), 4);
 
 	cv::Mat objPM;
 	cv::Mat(m_markerCorners3d).convertTo(objPM, CV_32F);
@@ -121,19 +124,18 @@ void CameraCalibration::calibration(cv::Matx33f camera_matrix, cv::Matx<float, 5
 
 	for (unsigned int i = 0; i < projectedPoints.size(); ++i)
 	{
-		circle(image_color, projectedPoints[i], 2, cv::Scalar(255, 0, 0), -1, 8);
+		circle(image_color, projectedPoints[i], 1.5, cv::Scalar(255, 0, 0), -1, 8);
 	}
 	cv::imshow("chessboard corners", image_color);
-	
-	cv::moveWindow("chessboard corners", 0, 0);
+	cv::waitKey(550);
 	//cv::imshow("chessboard corners", image_color2);
-	cv::waitKey(0);
+	//cv::waitKey(0);
 	std::cout << "R:\n" << rvec << std::endl;
 	std::cout << "T:\n" << tvec << std::endl;
 }
 
 
-cv::Mat CameraCalibration::process_transMatrix(cv::Mat rvec, cv::Mat tvec) {
+cv::Mat CameraCalibration::process_transMatrix(const cv::Mat& rvec, const cv::Mat& tvec) {
 	cv::Mat trans_mat(4, 4, CV_32F), rotM;
 
 	Rodrigues(rvec, rotM);
@@ -142,12 +144,12 @@ cv::Mat CameraCalibration::process_transMatrix(cv::Mat rvec, cv::Mat tvec) {
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			trans_mat.at<float>(i, j) = rotM.at<double>(i, j);
+			trans_mat.at<float>(i, j) = rotM.at<float>(i, j);
 		}
 	}
-	trans_mat.at<float>(0, 3) = tvec.at<double>(0, 0) / 100;
-	trans_mat.at<float>(1, 3) = tvec.at<double>(1, 0) / 100;
-	trans_mat.at<float>(2, 3) = tvec.at<double>(2, 0) / 100;
+	trans_mat.at<float>(0, 3) = tvec.at<float>(0, 0) / 100;
+	trans_mat.at<float>(1, 3) = tvec.at<float>(1, 0) / 100;
+	trans_mat.at<float>(2, 3) = tvec.at<float>(2, 0) / 100;
 
 	trans_mat.at<float>(3, 0) = 0;
 	trans_mat.at<float>(3, 1) = 0;
@@ -157,7 +159,7 @@ cv::Mat CameraCalibration::process_transMatrix(cv::Mat rvec, cv::Mat tvec) {
 	std::cout << "trans_mat:\n" << trans_mat << std::endl;
 
 	//camHcal->calHcam
-	//trans_mat = trans_mat.inv();
+	trans_mat = trans_mat.inv();
 
 	return trans_mat;
 }
@@ -178,6 +180,9 @@ void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 	camera_matrix = cv::Mat(3, 3, CV_64FC1, camD);
 	distortion_coefficients = cv::Mat(5, 1, CV_64FC1, distCoeffD);
 
+	std::cout << "camera_matrix: " << camera_matrix << std::endl;
+	std::cout << "distortion_coefficients: " << distortion_coefficients << std::endl;
+
 	std::vector<std::string> img_files;
 	getAllFiles(imgpath, img_files);
 
@@ -189,6 +194,7 @@ void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 	{
 		corner_detection(img_files[i]);
 		calibration(camera_matrix, distortion_coefficients, rvec, tvec);
+
 		trans_mat = process_transMatrix(rvec, tvec);
 		vec_res.push_back(trans_mat);
 
@@ -206,6 +212,7 @@ void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 	}
 
 	ofsCalib.close();
+	cv::destroyAllWindows();
 	return;
 }
 
@@ -293,7 +300,7 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 	//以下是摄像机标定
 	std::cout << "开始标定………………";
 	/*棋盘三维信息*/
-	cv::Size square_size = cv::Size(3, 3);  /* 实际测量得到的标定板上每个棋盘格的大小 */
+	cv::Size square_size = cv::Size(2, 2);  /* 实际测量得到的标定板上每个棋盘格的大小 cm*/
 	std::vector<std::vector<cv::Point3f>> object_points; /* 保存标定板上角点的三维坐标 */
 										   /*内外参数*/
 	cv::Mat cameraMatrix = cv::Mat(3, 3, CV_32FC1, cv::Scalar::all(0)); /* 摄像机内参数矩阵 */
@@ -382,16 +389,46 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 	/************************************************************************
 	显示定标结果
 	*************************************************************************/
-	cv::Mat mapx = cv::Mat(image_size, CV_32FC1);
+	/*cv::Mat mapx = cv::Mat(image_size, CV_32FC1);
 	cv::Mat mapy = cv::Mat(image_size, CV_32FC1);
 	cv::Mat R = cv::Mat::eye(3, 3, CV_32F);
+
+	std::cout << "保存矫正图像" << std::endl;
+	std::string imageFileName;
+	std::stringstream StrStm;
+	for (int i = 0; i != image_count; i++)
+	{
+		std::cout << "Frame #" << i + 1 << "..." << std::endl;
+		initUndistortRectifyMap(cameraMatrix, distCoeffs, R, cameraMatrix, image_size, CV_32FC1, mapx, mapy);
+		StrStm.clear();
+		imageFileName.clear();
+		std::string filePath = "chess";
+		StrStm << i + 1;
+		StrStm >> imageFileName;
+		filePath += imageFileName;
+		filePath += ".bmp";
+		cv::Mat imageSource = cv::imread(filePath);
+		cv::Mat newimage = imageSource.clone();
+		//另一种不需要转换矩阵的方式
+		//undistort(imageSource,newimage,cameraMatrix,distCoeffs);
+		cv::remap(imageSource, newimage, mapx, mapy, CV_INTER_LINEAR);
+		StrStm.clear();
+		filePath.clear();
+		StrStm << i + 1;
+		StrStm >> imageFileName;
+		imageFileName += "_d.jpg";
+		cv::imwrite(imageFileName, newimage);
+	}
+	*/
+	
 	std::cout << "保存结束" << std::endl;
 
-	cam_in.FLX = cameraMatrix.at<float>(0, 0);
-	cam_in.FLY = cameraMatrix.at<float>(1, 1);
-	cam_in.PPX = cameraMatrix.at<float>(0, 2);
-	cam_in.PPY = cameraMatrix.at<float>(1, 2);
+	std::cout << cameraMatrix << std::endl;
+	cam_in.FLX = cameraMatrix.at<double>(0, 0);
+	cam_in.FLY = cameraMatrix.at<double>(1, 1);
+	cam_in.PPX = cameraMatrix.at<double>(0, 2);
+	cam_in.PPY = cameraMatrix.at<double>(1, 2);
 
 	for(int i=0; i<distCoeffs.cols; i++)
-		distCoeffD[i] = distCoeffs.at<float>(0,i);
+		distCoeffD[i] = distCoeffs.at<double>(0,i);
 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RobotCalibration_Kinect2", "RobotCalibration_Kinect2\RobotCalibration_Kinect2.vcxproj", "{A630872B-0F8D-4C8C-A880-495435D001A1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatlabMexVS", "MatlabMexVS\MatlabMexVS.vcxproj", "{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{A630872B-0F8D-4C8C-A880-495435D001A1}.Release|x64.Build.0 = Release|x64
 		{A630872B-0F8D-4C8C-A880-495435D001A1}.Release|x86.ActiveCfg = Release|Win32
 		{A630872B-0F8D-4C8C-A880-495435D001A1}.Release|x86.Build.0 = Release|Win32
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Debug|x64.ActiveCfg = Debug|x64
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Debug|x64.Build.0 = Debug|x64
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Debug|x86.ActiveCfg = Debug|Win32
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Debug|x86.Build.0 = Debug|Win32
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Release|x64.ActiveCfg = Release|x64
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Release|x64.Build.0 = Release|x64
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Release|x86.ActiveCfg = Release|Win32
+		{EDF0A2AC-9F84-4D1B-9E0A-12D81915EBEB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

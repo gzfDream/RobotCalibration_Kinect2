@@ -1,4 +1,8 @@
 #pragma once
+#include <opencv2/core/eigen.hpp>
+#include "CalCamArm64.h"
+
+#pragma comment(lib,"CalCamArm64.lib")
 
 /*
 *	@brief	手眼标定的方法，包括六点法和标定板法（标定板固定在机械臂末端）
@@ -44,9 +48,10 @@ public:
 
 
 	/*
-	*	@brief	精度度量方法1：
+	*	@brief	标定结果优化
 	*
 	*/
+	void Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op);
 
 private:
 
@@ -68,5 +73,12 @@ private:
 	*	@return					返回标定板到机械臂的变换矩阵  baseHcal
 	*/
 	cv::Mat ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY);
+
+
+	//cv::Mat 转 mwArray
+	void eigenMat2mwArray(const Eigen::Matrix4d& mat, mwArray& arr);
+
+	//cv::Mat 转 mwArray
+	void mwArray2eigenMat(const mwArray& arr, Eigen::Matrix4d& mat);
 };
 

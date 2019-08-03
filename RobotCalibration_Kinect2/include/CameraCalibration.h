@@ -55,13 +55,13 @@ private:
 	*   @param:	rvec	旋转向量
 	*   @param: tvec	平移向量
 	*/
-	void calibration(cv::Matx33f camera_matrix, cv::Matx<float, 5, 1> distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec);
+	void calibration(const cv::Matx33f& camera_matrix, const cv::Matx<float, 5, 1>& distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec);
 
 
 	/*
 	*	@brief: 将旋转向量和平移向量变为4x4齐次变换矩阵
 	*/
-	cv::Mat process_transMatrix(cv::Mat rvec, cv::Mat tvec);
+	cv::Mat process_transMatrix(const cv::Mat& rvec, const cv::Mat& tvec);
 
 
 private:

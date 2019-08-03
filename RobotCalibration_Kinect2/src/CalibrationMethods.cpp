@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CalibrationMethods.h"
-#include <opencv2/core/eigen.hpp>
+
 
 CalibrationMethods::CalibrationMethods()
 {
@@ -258,7 +258,6 @@ void CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_
 	std::vector<cv::Mat> calHcam;
 	cv::Mat matA(4, 4, CV_64FC1), matB(4, 4, CV_64FC1);
 
-
 	// 读取机械臂末端位姿
 	basHtool = readf_vec(robot);
 	// 读取相机和标定板的变换矩阵
@@ -311,4 +310,95 @@ void CalibrationMethods::Method_ThreePointsCalibration(cv::Point3d pointO, cv::P
 	// cv::Mat baseHcam;
 	baseHcam = baseHcal * (camHcal.inv());
 	return;
+}
+
+void CalibrationMethods::eigenMat2mwArray(const Eigen::Matrix4d& m1, mwArray& arr) {
+	Eigen::Matrix4d m = m1.transpose();
+
+	double tmp[] = {
+		m(0,0), m(0,1), m(0,2), m(0,3),
+		m(1,0), m(1,1), m(1,2), m(1,3),
+		m(2,0), m(2,1), m(2,2), m(2,3),
+		m(3,0), m(3,1), m(3,2), m(3,3)
+	};
+
+	arr.SetData(tmp, 16);
+
+}
+
+void CalibrationMethods::mwArray2eigenMat(const mwArray& arr, Eigen::Matrix4d& mat) {
+	mat << arr.Get(1, 1), arr.Get(1, 5), arr.Get(1, 9), arr.Get(1, 13),
+		arr.Get(1, 2), arr.Get(1, 6), arr.Get(1, 10), arr.Get(1, 14),
+		arr.Get(1, 3), arr.Get(1, 7), arr.Get(1, 11), arr.Get(1, 15),
+		arr.Get(1, 4), arr.Get(1, 8), arr.Get(1, 12), arr.Get(1, 16);
+}
+
+void CalibrationMethods::Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op) {
+	if (!mclInitializeApplication(nullptr, 0)) {
+		std::cerr << "Could not initialize the application properly" << std::endl;
+		return;
+	}
+
+	if (!CalCamArm64Initialize()) {
+		std::cerr << "Could not initialize the library properly" << std::endl;
+		return;
+	}
+	else {
+		try {
+			// 返回值
+			mwArray TBase;
+			mwArray TEnd;
+			mwArray cameraParams;
+			mwArray TBaseStd;
+			mwArray TEndStd;
+			mwArray pixelErr;
+
+			// 输入值
+			// char img_path[] = "D:/OneDrive/code/RE3D_grasp_demo/Re3DX_Grasp_demo/EyeToHand/data/Images/";
+			mwArray imageFolder(img_path.c_str());
+			// char armMat_path[] = "D:/OneDrive/code/RE3D_grasp_demo/Re3DX_Grasp_demo/EyeToHand/data/robot.txt";
+			mwArray armMat(armMat_path.c_str());
+
+			int realSize[] = { 20 };
+			mwArray squareSize(1, 1, mxINT32_CLASS, mxREAL);
+			squareSize.SetData(realSize, 1);
+
+			mwArray baseEst(4, 4, mxDOUBLE_CLASS, mxREAL);
+			Eigen::Matrix4d base_mat;
+			cv::cv2eigen(baseHcam, base_mat);
+			// cout << "base_mat" << base_mat << endl;
+			Eigen::Matrix4d base_mat_inv = base_mat.inverse();
+			// std::cout << "base_mat_inv: " << base_mat_inv << endl;
+			eigenMat2mwArray(base_mat_inv, baseEst);
+
+			std::cout << "imageFolder: " << imageFolder << endl;
+			std::cout << "armMat: " << armMat << endl;
+			std::cout << "squareSize: " << squareSize << endl;
+			std::cout << "baseEst: " << baseEst << endl;
+
+			CalCamArm(6, TBase, TEnd, cameraParams, TBaseStd, TEndStd, pixelErr, imageFolder, armMat, squareSize, baseEst);
+			std::cout << "TBase: " << TBase << endl;
+
+			Eigen::Matrix4d result;
+			mwArray2eigenMat(TBase, result);
+			// std::cout << "result: " << result << endl;
+
+			Eigen::Matrix4d result_inv = result.inverse();
+			// std::cout << "result_inv: " << result_inv << endl;
+
+			cv::eigen2cv(result_inv, baseHcam_op);
+		}
+		catch (const mwException& e) {
+			std::cerr << e.what() << std::endl;
+			return;
+		}
+		catch (...) {
+			std::cerr << "Unexpected error thrown" << std::endl;
+			return;
+		}
+
+		CalCamArm64Terminate();
+	}
+
+	mclTerminateApplication();
 }
