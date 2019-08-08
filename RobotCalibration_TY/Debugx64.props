@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(OPENCV_INCLUDE346);$(KINECT2_INCLUDE);$(EIGEN_INCLUDE);D:\MATLAB\R2017b\extern\include;.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>D:\MATLAB\R2017b\extern\lib\win64\microsoft;$(OPENCV_LIB346);$(KINECT2_LIB_64);.\libs_TY;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;opencv_world346d.lib;cloud_viewer.lib;freeglut_static.lib;sample_common.lib;tycam.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

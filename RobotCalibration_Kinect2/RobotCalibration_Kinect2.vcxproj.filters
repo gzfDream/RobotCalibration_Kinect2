@@ -21,9 +21,6 @@
     <ClCompile Include="src\stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\ImgProcess.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\CameraCalibration.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -31,6 +28,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="include\HandEyeMethos.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImgProcess_kinect2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,7 +50,10 @@
     <ClInclude Include="include\CalibrationMethods.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\RobotCalibration_Kinect2.h">
+    <ClInclude Include="include\ImgProcess_kinect2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RobotCalibration.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

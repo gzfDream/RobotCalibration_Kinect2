@@ -86,7 +86,14 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include\include_TY;include\common_TY\cloud_viewer\freeglut\include;include\common_TY\cloud_viewer;include\freeglut_install_TY\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>libs_TY\sample_common.lib;libs_TY\tycam.lib;libs_TY\cloud_viewer.lib;libs_TY\\freeglut_staticd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -124,15 +131,16 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\CalibrationMethods.cpp" />
     <ClCompile Include="src\CameraCalibration.cpp" />
-    <ClCompile Include="src\ImgProcess.cpp" />
+    <ClCompile Include="src\ImgProcess_kinect2.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\CalibrationMethods.h" />
     <ClInclude Include="include\CameraCalibration.h" />
     <ClInclude Include="include\HandEyeMethods.h" />
+    <ClInclude Include="include\ImgProcess_kinect2.h" />
     <ClInclude Include="include\quaternion.h" />
-    <ClInclude Include="include\RobotCalibration_Kinect2.h" />
+    <ClInclude Include="include\RobotCalibration.h" />
     <ClInclude Include="include\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
