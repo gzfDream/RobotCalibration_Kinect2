@@ -1,8 +1,8 @@
 #pragma once
 #include <opencv2/core/eigen.hpp>
-#include "CalCamArm64.h"
+#include "CalCamArm_64.h"
 
-#pragma comment(lib,"CalCamArm64.lib")
+#pragma comment(lib,"CalCamArm_64.lib")
 
 /*
 *	@brief	手眼标定的方法，包括六点法和标定板法（标定板固定在机械臂末端）

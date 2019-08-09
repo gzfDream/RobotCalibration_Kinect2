@@ -11,7 +11,7 @@ CalibrationMethods::~CalibrationMethods()
 {
 }
 
-int getlineNum(string str) {
+static int getlineNum(string str) {
 	ifstream  file(str);
 	int lineNum = 0;
 	string temp;
@@ -22,7 +22,7 @@ int getlineNum(string str) {
 	return lineNum;
 }
 
-std::vector<Mat> readf_vec(string str) {
+static std::vector<Mat> readf_vec(string str) {
 	std::vector<Mat> vec_mat;
 	Mat mat(4, 4, CV_64FC1);
 	float x;
@@ -48,7 +48,7 @@ std::vector<Mat> readf_vec(string str) {
 	return vec_mat;
 }
 
-cv::Mat zhiji_Multiply(Mat&A, Mat&B)
+static cv::Mat zhiji_Multiply(Mat&A, Mat&B)
 {
 	//矩阵直积
 	int height = A.rows*B.rows;
@@ -63,7 +63,7 @@ cv::Mat zhiji_Multiply(Mat&A, Mat&B)
 	return dst;
 }
 
-cv::Mat vector_To_Mat(Mat&A)
+static cv::Mat vector_To_Mat(Mat&A)
 {
 	Mat dst(3, 3, CV_64FC1);
 	for (int i = 0; i < 3; i++)
@@ -137,7 +137,7 @@ Mat CalibrationMethods::HandEyeMethod(const vector<Mat>Hgij, const vector<Mat>Hc
 }
 
 // 将cv::Point3d转成eigen::vector3d
-Eigen::Vector3d cvPoint3d_eigenVector3d(cv::Point3d p) {
+static Eigen::Vector3d cvPoint3d_eigenVector3d(cv::Point3d p) {
 	Eigen::Vector3d res(p.x, p.y, p.z);
 
 	return res;
@@ -339,7 +339,7 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 		return;
 	}
 
-	if (!CalCamArm64Initialize()) {
+	if (!CalCamArm_64Initialize()) {
 		std::cerr << "Could not initialize the library properly" << std::endl;
 		return;
 	}
@@ -349,8 +349,6 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 			mwArray TBase;
 			mwArray TEnd;
 			mwArray cameraParams;
-			mwArray TBaseStd;
-			mwArray TEndStd;
 			mwArray pixelErr;
 
 			// 输入值
@@ -376,7 +374,7 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 			std::cout << "squareSize: " << squareSize << endl;
 			std::cout << "baseEst: " << baseEst << endl;
 
-			CalCamArm(6, TBase, TEnd, cameraParams, TBaseStd, TEndStd, pixelErr, imageFolder, armMat, squareSize, baseEst);
+			CalCamArm_(4, TBase, TEnd, cameraParams, pixelErr, imageFolder, armMat, squareSize, baseEst);
 			std::cout << "TBase: " << TBase << endl;
 
 			Eigen::Matrix4d result;
@@ -397,7 +395,7 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 			return;
 		}
 
-		CalCamArm64Terminate();
+		CalCamArm_64Terminate();
 	}
 
 	mclTerminateApplication();

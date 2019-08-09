@@ -8,7 +8,7 @@
 
 
 // 得到路径下的所有文件名，存到vector中
-void getAllFiles(std::string path, std::vector<std::string>& files)
+static void getAllFiles(std::string path, std::vector<std::string>& files)
 {
 	intptr_t   hFile = 0;
 
@@ -215,7 +215,6 @@ void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 	cv::destroyAllWindows();
 	return;
 }
-
 
 
 // 计算相机内参

@@ -11,11 +11,11 @@ ImgProcess_TY::ImgProcess_TY() {
 	LOGD("     - lib version: %d.%d.%d", ver.major, ver.minor, ver.patch);
 }
 ImgProcess_TY::~ImgProcess_TY() {
-	LOGD("=== Deinit lib");
+	LOGD("=== Deinit lib");	
 	ASSERT_OK(TYDeinitLib());
 }
 
-void eventCallback(TY_EVENT_INFO *event_info, void *userdata)
+static void eventCallback(TY_EVENT_INFO *event_info, void *userdata)
 {
 	if (event_info->eventId == TY_EVENT_DEVICE_OFFLINE) {
 		LOGD("=== Event Callback: Device Offline!");
@@ -250,6 +250,7 @@ void ImgProcess_TY::getImage(std::string str) {
 			LOGI("normal exit");
 		}
 		// ֹͣ
+		cv::destroyAllWindows();
 		ASSERT_OK(TYStopCapture(hDevice));
 		ASSERT_OK(TYCloseDevice(hDevice));
 		ASSERT_OK(TYCloseInterface(hIface));
