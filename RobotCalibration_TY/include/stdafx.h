@@ -1,4 +1,5 @@
 #pragma once
+#define PI 3.1415926
 
 #include <stdlib.h>
 #include <stdio.h>

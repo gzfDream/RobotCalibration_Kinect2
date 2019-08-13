@@ -64,9 +64,9 @@ void CalibrationFunc() {
 		case 'g': //获得图片
 		{
 			// 初始化相机
-			ImgProcess_TY imgP;
-			imgP.getImage(cam_cal_file);
-			
+			//ImgProcess_TY imgP;
+			//imgP.getImage(cam_cal_file);
+			ImgProcess_TY::getImage(cam_cal_file);
 			break;
 		}
 
@@ -127,9 +127,10 @@ void CalibrationFunc() {
 			std::cout << "用相机拍摄标定板, 可拍摄多张" << endl;
 
 			// 初始化相机
-			ImgProcess_TY imgP;
-			imgP.getImage(cam_cal_file);
-			
+			//ImgProcess_TY imgP;
+			//imgP.getImage(cam_cal_file);
+			ImgProcess_TY::getImage(cam_cal_file);
+
 			vector<cv::Mat> res;
 			cal.external_reference_calibration(camera_ins_H, distCoeffD, cam_cal_file, cam_external_file, res);
 

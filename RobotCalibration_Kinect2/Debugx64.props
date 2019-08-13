@@ -8,8 +8,8 @@
       <AdditionalIncludeDirectories>$(OPENCV_INCLUDE346);$(KINECT2_INCLUDE);$(EIGEN_INCLUDE);D:\MATLAB\R2017b\extern\include;.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\MATLAB\R2017b\extern\lib\win64\microsoft;$(OPENCV_LIB346);$(KINECT2_LIB_64);.\libs_TY;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;opencv_world346d.lib;Kinect20.lib;cloud_viewer.lib;freeglut_static.lib;sample_common.lib;tycam.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\MATLAB\R2017b\extern\lib\win64\microsoft;$(OPENCV_LIB346);$(KINECT2_LIB_64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;opencv_world346d.lib;Kinect20.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

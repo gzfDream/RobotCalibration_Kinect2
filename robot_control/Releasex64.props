@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\Dependencies\curl\debug\include;..\Dependencies\jsoncpp\include;..\Dependencies\TY\include_TY;..\Dependencies\TY\common_TY\cloud_viewer\freeglut\include;..\Dependencies\TY\common_TY\cloud_viewer;..\Dependencies\TY\freeglut_install_TY\include;D:\MATLAB\R2017b\extern\include;$(OPENCV_INCLUDE346);$(EIGEN_INCLUDE);.\include;..\Dependencies\TY\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;FREEGLUT_STATIC;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\Dependencies\curl\release\lib;..\Dependencies\jsoncpp\libs;..\Dependencies\TY\libs_TY\;$(OPENCV_LIB346);D:\MATLAB\R2017b\extern\lib\win64\microsoft;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libcurl.lib;json_x64_libmt.lib;opencv_world346.lib;libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;sample_common.lib;tycam.lib;cloud_viewer.lib;freeglut_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

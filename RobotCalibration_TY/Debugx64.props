@@ -5,11 +5,12 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(OPENCV_INCLUDE346);$(KINECT2_INCLUDE);$(EIGEN_INCLUDE);D:\MATLAB\R2017b\extern\include;.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OPENCV_INCLUDE346);$(EIGEN_INCLUDE);D:\MATLAB\R2017b\extern\include;.\include;..\Dependencies\TY\include_TY;..\Dependencies\TY\common_TY\cloud_viewer\freeglut\include;..\Dependencies\TY\common_TY\cloud_viewer;..\Dependencies\TY\freeglut_install_TY\include;..\Dependencies\TY\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;FREEGLUT_STATIC;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\MATLAB\R2017b\extern\lib\win64\microsoft;$(OPENCV_LIB346);$(KINECT2_LIB_64);.\libs_TY;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;opencv_world346d.lib;cloud_viewer.lib;freeglut_static.lib;sample_common.lib;tycam.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\MATLAB\R2017b\extern\lib\win64\microsoft;$(OPENCV_LIB346);..\Dependencies\TY\libs_TY\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sample_commond.lib;tycam.lib;cloud_viewerd.lib;freeglut_staticd.lib;libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;opencv_world346d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

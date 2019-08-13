@@ -20,9 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{FB65E818-032B-4718-A02B-DAD418A9DDB3}</ProjectGuid>
-    <RootNamespace>RobotCalibrationTY</RootNamespace>
+    <ProjectGuid>{E13CFE25-695D-49EE-983A-66E82648B207}</ProjectGuid>
+    <RootNamespace>TYTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <ProjectName>robot_control</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,7 +79,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>include\include_TY;include\common_TY\cloud_viewer\freeglut\include;include\common_TY\cloud_viewer;include\freeglut_install_TY\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -117,33 +118,21 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;FREEGLUT_STATIC;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\CalibrationMethods.h" />
-    <ClInclude Include="include\CameraCalibration.h" />
-    <ClInclude Include="include\HandEyeMethods.h" />
-    <ClInclude Include="include\ImgProcess_TY.h" />
-    <ClInclude Include="include\quaternion.h" />
-    <ClInclude Include="include\RobotCalibration.h" />
-    <ClInclude Include="include\stdafx.h" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\ImgProcess_TY.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\HandEyeMethos.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\CalibrationMethods.cpp" />
-    <ClCompile Include="src\CameraCalibration.cpp" />
-    <ClCompile Include="src\ImgProcess_TY.cpp" />
-    <ClCompile Include="src\stdafx.cpp" />
+    <ClInclude Include="include\Grasp.h" />
+    <ClInclude Include="include\ImgProcess_TY.h" />
+    <ClInclude Include="include\predict_post.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

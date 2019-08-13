@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ImgProcess_TY.h"
 
 ImgProcess_TY::ImgProcess_TY() {
@@ -25,6 +26,7 @@ static void eventCallback(TY_EVENT_INFO *event_info, void *userdata)
 		LOGD("=== Event Callback: License Error!");
 	}
 }
+
 
 void ImgProcess_TY::getImage(std::string str) {
 	bool loop_exit = false;
@@ -257,4 +259,80 @@ void ImgProcess_TY::getImage(std::string str) {
 		delete frameBuffer[0];
 		delete frameBuffer[1];
 	}
+}
+
+
+bool ImgProcess_TY::getPixelDepth(cv::Point pixel, std::string depth_path, double &depth) {
+	cv::Mat deoth_image = cv::imread(depth_path, CV_16U);
+	if (deoth_image.type() != CV_16U || deoth_image.total() == 0) {
+		return false;
+	}
+	double depth_scale_unit = 1.;
+	depth = deoth_image.at<cv::uint16_t>(pixel.x, pixel.y)*depth_scale_unit;
+
+	return true;
+}
+
+
+// 参考链接：https://blog.csdn.net/xholes/article/details/80599802
+void ImgProcess_TY::ImgPixel2CameraPosition(const std::vector<cv::Point>& pixels, const Camera_Intrinsics& cam_in,
+							                const double distCoeffD[5], std::vector<cv::Point2d>& camera_xy) {
+	//相机内参
+	/*
+	Eigen::MatrixXd camera_ins = Eigen::MatrixXd::Zero(3, 4);
+	camera_ins << cam_in.FLX, 0, cam_in.PPX, 0,
+		0, cam_in.FLY, cam_in.PPY, 0,
+		0, 0, 1, 0;
+	std::cout << "camera_ins:" << camera_ins << std::endl;
+	*/
+	
+	for (int i = 0; i < pixels.size(); ++i) {
+		cv::Point2d p;
+		p.x = (pixels[i].x - cam_in.PPX) / cam_in.FLX;
+		p.y = (pixels[i].y - cam_in.PPY) / cam_in.FLY;
+
+		double r_2 = p.x*p.x + p.y*p.y;
+		cv::Point2d p_ = (1 + distCoeffD[0] * r_2 + distCoeffD[1] * r_2*r_2 + distCoeffD[2] * pow(r_2, 3)) * p
+			+ cv::Point2d(2 * distCoeffD[3] * p.x*p.y + distCoeffD[4] * (r_2 + 2 * p.x*p.x),
+				2 * distCoeffD[3] * (r_2 + 2 * p.y*p.y) + 2 * distCoeffD[4] * p.x *p.y);
+
+		camera_xy.push_back(p_);
+	}
+	
+}
+
+
+bool align_rectangle(std::vector<cv::Point3d> src, std::vector<cv::Point3d> dst, cv::Mat& rotate_) {
+	
+	cv::Mat vec_src(src[1] - src[0]);
+	cv::Mat vec_dst(dst[1] - dst[0]);
+
+	double theta = 0.;
+
+	if (cv::norm(vec_src) != 0 && cv::norm(vec_dst) != 0) {
+		theta = acosf(vec_src.dot(vec_dst) / (cv::norm(vec_src)*cv::norm(vec_dst)));
+		if (theta > (PI - theta))
+			theta = PI - theta;
+	}
+	else {
+		std::cout << "ERROR: 输入抓取矩形不正确！" << std::endl;
+		return false;
+	}
+
+	std::cout << "theta: " << theta << std::endl;
+
+	double mat_[4] = { cos(theta), sin(theta), -sin(theta), cos(theta) };
+	cv::Mat rotate_mat = cv::Mat(2, 2, CV_64FC1, mat_);
+
+	double tmp = vec_dst.dot(rotate_mat*vec_src);
+	if (tmp - 1 < 0.0000001 && tmp - 1 > -0.0000001) {
+
+	}
+	else {
+		double mat_[4] = { cos(PI / 2 - theta), sin(PI / 2 - theta), -sin(PI / 2 - theta), cos(PI / 2 - theta) };
+		rotate_mat = cv::Mat(2, 2, CV_64FC1, mat_);
+	}
+
+	rotate_ = rotate_mat.clone();
+	return true;
 }
