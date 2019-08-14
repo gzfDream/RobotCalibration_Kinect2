@@ -26,7 +26,8 @@ void eventCallback(TY_EVENT_INFO *event_info, void *userdata)
 	}
 }
 
-void ImgProcess_TY::getImage(std::string str) {
+
+void ImgProcess_TY::getImage(std::string url, std::string img_path) {
 	bool loop_exit = false;
 
 	while (!loop_exit) {
@@ -174,6 +175,11 @@ void ImgProcess_TY::getImage(std::string str) {
 
 		int count = 0;
 		TY_FRAME_DATA frame;
+
+		// 存储位置
+		std::string rgb_path = img_path + "rgb_.png";
+		std::string depth_path = img_path + "depth_.png";
+
 		while (!exit_main) {
 			// 主动获取深度数据模式下，应用可调用该接口获取深度数据。注意回调函数模式下不需要调用。 
 			// 获取数据后，用户程序进行运算处理时，应采用独立线程，避免堵塞图像获取线程的运转。
@@ -201,15 +207,23 @@ void ImgProcess_TY::getImage(std::string str) {
 				}
 
 				if (saveFrame && !depth.empty()) {
-					if (saveIdx<10) {
-						// cv::imwrite(str + "0" + std::to_string(saveIdx) + ".png", depth);
-						cv::imwrite(str + "0" + std::to_string(saveIdx) + ".png", color);
-					}
-					else {
-						// cv::imwrite(str + std::to_string(saveIdx) + ".png", depth);
-						cv::imwrite(str + std::to_string(saveIdx) + ".png", color);
-					}
+					cv::Rect io_select = cv::Rect(500, 100, 900, 980);
+
+					cv::Mat io_rgb = color(io_select);
+					cv::Mat io_depth = depth(io_select);
+
+					cv::imwrite(rgb_path, io_rgb);
+					cv::imwrite(depth_path, io_depth);
+
+					std::vector<cv::Point> ps;
+					int back_code = Predict_Post::start_predict((char*)url.c_str(), (char*)rgb_path.c_str(), (char*)depth_path.c_str(), ps);
 					
+					if (back_code > 0) {
+						for (int i = 0; i < ps.size(); ++i) {
+							std::cout << ps[i] << std::endl;
+						}
+					}
+
 					saveIdx++;
 					saveFrame = false;
 				}
@@ -257,3 +271,45 @@ void ImgProcess_TY::getImage(std::string str) {
 		delete frameBuffer[1];
 	}
 }
+
+
+
+bool ImgProcess_TY::getPixelDepth(cv::Point pixel, std::string depth_path, double &depth) {
+	cv::Mat deoth_image = cv::imread(depth_path, CV_16U);
+	if (deoth_image.type() != CV_16U || deoth_image.total() == 0) {
+		return false;
+	}
+	double depth_scale_unit = 1.;
+	depth = deoth_image.at<cv::uint16_t>(pixel.x, pixel.y)*depth_scale_unit;
+
+	return true;
+}
+
+
+// 参考链接：https://blog.csdn.net/xholes/article/details/80599802
+void ImgProcess_TY::ImgPixel2CameraPosition(const std::vector<cv::Point>& pixels, const Camera_Intrinsics& cam_in,
+	const double distCoeffD[5], std::vector<cv::Point2d>& camera_xy) {
+	//相机内参
+	/*
+	Eigen::MatrixXd camera_ins = Eigen::MatrixXd::Zero(3, 4);
+	camera_ins << cam_in.FLX, 0, cam_in.PPX, 0,
+		0, cam_in.FLY, cam_in.PPY, 0,
+		0, 0, 1, 0;
+	std::cout << "camera_ins:" << camera_ins << std::endl;
+	*/
+
+	for (int i = 0; i < pixels.size(); ++i) {
+		cv::Point2d p;
+		p.x = (pixels[i].x - cam_in.PPX) / cam_in.FLX;
+		p.y = (pixels[i].y - cam_in.PPY) / cam_in.FLY;
+
+		double r_2 = p.x*p.x + p.y*p.y;
+		cv::Point2d p_ = (1 + distCoeffD[0] * r_2 + distCoeffD[1] * r_2*r_2 + distCoeffD[2] * pow(r_2, 3)) * p
+			+ cv::Point2d(2 * distCoeffD[3] * p.x*p.y + distCoeffD[4] * (r_2 + 2 * p.x*p.x),
+				2 * distCoeffD[3] * (r_2 + 2 * p.y*p.y) + 2 * distCoeffD[4] * p.x *p.y);
+
+		camera_xy.push_back(p_);
+	}
+
+}
+

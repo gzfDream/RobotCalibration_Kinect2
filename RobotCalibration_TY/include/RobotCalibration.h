@@ -12,8 +12,9 @@ void printMenu() {
 	printf("  i  计算内参\n");
 	printf("  e  计算外参\n");
 	printf("  p  标定（棋盘格在机械臂上）\n");
-	printf("  o  标定结果优化（棋盘格在机械臂上）\n");
+	printf("  o  标定结果优化（棋盘格在机械臂上，自带精度测试）\n");
 	printf("  s  三点法标定 \n");
+	printf("  m  精度测试(探针) \n");
 	printf("  q  退出\n");
 }
 
@@ -61,31 +62,38 @@ void CalibrationFunc() {
 		printf("please input the command >>> \n");
 		std::getline(std::cin, line);
 		switch (line[0]) {
+		case 'i': //棋盘格相机标定
+		{
+			std::cout << "======》》》相机内参标定， 开始" << std::endl;
+			// 初始化相机，存储标定内参所用的图片
+			std::cout << "-*-*-*-*-开始采集标定相机内参所需图片-*-*-*-*-" << std::endl;
+			ImgProcess_TY::getImage(img_internal_file);
+
+			std::cout << "-*-*-*-*-开始计算相机内参-*-*-*-*-" << endl;
+			cal.internal_reference_calibration(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
+			break;
+		}
+
 		case 'g': //获得图片
 		{
 			// 初始化相机
-			//ImgProcess_TY imgP;
-			//imgP.getImage(cam_cal_file);
+			std::cout << "======》》》开始采集标定机械臂和相机所需图片" << std::endl;
 			ImgProcess_TY::getImage(cam_cal_file);
 			break;
 		}
 
-		case 'i': //棋盘格相机标定
-			std::cout << "开始获得相机内参" << endl;
-			cal.internal_reference_calibration(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
-			break;
-
 		case 'e': 
 		{
-			std::cout << "开始获得相机外参" << endl;
+			std::cout << "======》》》机械臂相机标定，开始" << endl;
 			cout << "-*-*-*-*-是否重新计算相机内参（输入1/0）-*-*-*-*-" << endl;
 			int ok = 0;
 			cin >> ok;
 			if (ok) {
-				std::cout << "开始获得相机内参" << endl;
-				cal.internal_reference_calibration(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
+				std::cout << "-*-*-*-*-开始获得相机内参-*-*-*-*-" << endl;
+				cal.internal_reference_calibration(cam_cal_file, cam_internal_file, camera_ins_H, distCoeffD);
 			}
 
+			std::cout << "-*-*-*-*-开始计算外参-*-*-*-*-" << endl;
 			vector<cv::Mat> res;
 			cal.external_reference_calibration(camera_ins_H, distCoeffD, cam_cal_file, cam_external_file, res);
 			break;
@@ -93,7 +101,7 @@ void CalibrationFunc() {
 			
 		case 'p':
 		{
-			std::cout << "获得标定结果" << endl;
+			std::cout << "-*-*-*-*-计算机械臂相机标定结果-*-*-*-*-" << endl;
 			CalibrationMethods c;
 			c.Method_BoardOnRobot(robot_pose_file, cam_external_file, result_file, res_mat);
 			break;
@@ -101,34 +109,35 @@ void CalibrationFunc() {
 
 		case 'o':
 		{
+			std::cout << "======》》》使用matlab中算法再次计算" << endl;
 			cv::Mat result;
 			CalibrationMethods c;
 			c.Calibration_Optimization(cam_cal_file, robot_pose_file, res_mat, result);
+
+			std::cout << "-*-*-*-*-计算结果-*-*-*-*-" << endl;
 			std::cout << result << endl;
 			break;
 		}
 
 		case 's':
 		{
-			std::cout << "开始三点法标定" << endl;
-			std::cout << "请示教机械臂到标定板坐标系原点，x轴一点，xoy平面内一点（不一定在y轴）" << endl;
+			std::cout << "======》》》开始三点法标定" << endl;
+			std::cout << "-*-*-*-*-请移动示教机械臂到标定板坐标系原点，x轴一点，xoy平面内一点（不一定在y轴）-*-*-*-*-" << endl;
 			cv::Point3d pos_O, pos_X, pos_Y;
 
-			std::cout << "please input the three points(X,Y,Z):" << endl;
-			std::cout << "point O:" << endl;
+			std::cout << "-*-*-*-*-请输入三个标定点(X,Y,Z):" << endl;
+			std::cout << "-*-*-*-*-point O:-*-*-*-*-" << endl;
 			cin >> pos_O.x >> pos_O.y >> pos_O.z;
 
-			std::cout << "point X:" << endl;
+			std::cout << "-*-*-*-*-point X:-*-*-*-*-" << endl;
 			cin >> pos_X.x >> pos_X.y >> pos_X.z;
 
-			std::cout << "point Y:" << endl;
+			std::cout << "-*-*-*-*-point Y:-*-*-*-*-" << endl;
 			cin >> pos_Y.x >> pos_Y.y >> pos_Y.z;
 
-			std::cout << "用相机拍摄标定板, 可拍摄多张" << endl;
+			std::cout << "-*-*-*-*-用相机拍摄标定板,计算相机相对于标定板的外参（可拍摄多张）-*-*-*-*-" << endl;
 
 			// 初始化相机
-			//ImgProcess_TY imgP;
-			//imgP.getImage(cam_cal_file);
 			ImgProcess_TY::getImage(cam_cal_file);
 
 			vector<cv::Mat> res;
@@ -142,6 +151,9 @@ void CalibrationFunc() {
 
 			CalibrationMethods c;
 			c.Method_ThreePointsCalibration(pos_O, pos_X, pos_Y, ex_mat, res_mat);
+
+			std::cout << "-*-*-*-*-计算结果-*-*-*-*-" << endl;
+			std::cout << res_mat << std::endl;
 			break;
 		}
 

@@ -5,77 +5,46 @@
 #include <json/json.h>
 #include <curl/curl.h>
 
-static void parseStrJson(std::string strJsonContent) {
-	Json::Reader reader;
-	Json::Value root;
-
-	std::vector<cv::Point> vec_points;
-
-	std::string state = "";
-	if (reader.parse(strJsonContent, root))
-	{
-		cv::Point p0;
-		p0.x = std::stoi(root["p0_x"].asString());
-		p0.y = std::stoi(root["p0_y"].asString());
-		std::cout << p0 << std::endl;
-
-		p0.x = std::stoi(root["p1_x"].asString());
-		p0.y = std::stoi(root["p1_y"].asString());
-		std::cout << p0 << std::endl;
-
-		p0.x = std::stoi(root["p2_x"].asString());
-		p0.y = std::stoi(root["p2_y"].asString());
-		std::cout << p0 << std::endl;
-
-		p0.x = std::stoi(root["p3_x"].asString());
-		p0.y = std::stoi(root["p3_y"].asString());
-		std::cout << p0 << std::endl;
-
-		state = root["state"].asString();
-	}
+/*
+* @brief	该结构用于存储服务器返回结果
+*/
+struct MemoryStruct {
+	char *memory;
+	size_t size;
+};
 
 
-	std::cout << "state is: " << state << std::endl;
-}
-
-static size_t post_return(char *ptr, size_t size, size_t nmemb, void *stream)
+/*
+* @brief	预测抓取位置的类
+*/
+class Predict_Post
 {
-	std::string strJsonContent = ptr;
-	parseStrJson(strJsonContent);
-	return nmemb;
-}
+public:
+	Predict_Post();
+	~Predict_Post();
 
-static int start_predict(char *url, char *rgb_image_path, char *depth_image_path)
-{
-	CURL *pCurl = NULL;
-	CURLcode res;
+	/*
+	* @brief	预测抓取区域
+	* @param	url		服务器IP和端口
+	* @param	rgb_image_path	颜色图路径
+	* @param	depth_image_path	深度图路径
+	* @param	box_points		待抓取物体包围盒(4*cv::Point)+吸盘位置包围盒(4*cv::Point)
+	* @return	url初始化失败返回 0；连接失败返回 -1； 成功返回数据长度
+	*/
+	static int start_predict(char *url, char *rgb_image_path, char *depth_image_path, std::vector<cv::Point>& box_points);
 
-	struct curl_slist *headerlist = NULL;
-	struct curl_httppost *post = NULL;
-	struct curl_httppost *last = NULL;
-	curl_formadd(&post, &last, CURLFORM_COPYNAME, "rgb_image",
-		CURLFORM_FILE, rgb_image_path,
-		CURLFORM_END);
+private:
+	/*
+	* @brief	json解析
+	* @param	strJsonContent		服务器返回（string）
+	* @param	vec_points			待抓取物体包围盒(4*cv::Point)+吸盘位置包围盒(4*cv::Point)
+	* @return	解析成功返回true，否则返回false
+	*/
+	static bool parseStrJson(std::string strJsonContent, std::vector<cv::Point>& vec_points);
 
-	curl_formadd(&post, &last, CURLFORM_COPYNAME, "depth_image",
-		CURLFORM_FILE, depth_image_path,
-		CURLFORM_END);
+	/*
+	* @brief	回调函数
+	*/
+	static size_t post_return(char *ptr, size_t size, size_t nmemb, void *stream);
 
-	pCurl = curl_easy_init();
-
-	if (NULL != pCurl)
-	{
-		curl_easy_setopt(pCurl, CURLOPT_URL, url);
-		curl_easy_setopt(pCurl, CURLOPT_HTTPPOST, post);
-		curl_easy_setopt(pCurl, CURLOPT_WRITEFUNCTION, post_return);
-
-		res = curl_easy_perform(pCurl);
-		if (res != CURLE_OK)
-		{
-			printf("curl_easy_perform() failed，error code is:%s\n", curl_easy_strerror(res));
-		}
-
-		curl_easy_cleanup(pCurl);
-	}
-	return 1;
-}
+};

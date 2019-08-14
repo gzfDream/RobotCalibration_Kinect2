@@ -53,7 +53,8 @@ int main()
 	char url_[] = "http://192.168.3.39:5000/predict";
 	char rgb[] = "./data/rgb.jpg";
 	char depth[] = "./data/depth.png";
-	back_code = start_predict(url_, rgb, depth);
+	std::vector<cv::Point> ps;
+	back_code =Predict_Post::start_predict(url_, rgb, depth, ps);
 
 	system("pause");
 	return 0;

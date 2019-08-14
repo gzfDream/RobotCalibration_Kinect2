@@ -127,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="predict_post.cpp" />
     <ClCompile Include="src\ImgProcess_TY.cpp" />
   </ItemGroup>
   <ItemGroup>
