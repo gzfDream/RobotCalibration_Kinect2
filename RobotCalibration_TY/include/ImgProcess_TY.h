@@ -10,11 +10,13 @@ public:
 	~ImgProcess_TY();
 
 public:
+
 	/*
 	* @brief	使用图漾相机得到rgb图片 
-	* @param	str		存储路径
+	* @param	str			存储路径
+	* @param	depth_or	是否存储深度图（true则存储）
 	*/
-	static void getImage(std::string str);
+	static void getImage(std::string str, bool depth_or);
 	
 	/*
 	* @brief	得到深度图指定像素点的深度值

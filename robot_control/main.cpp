@@ -1,5 +1,5 @@
 #include <iostream>
-#include "include/ImgProcess_TY.h"
+#include "ImgProcess_TY.h"
 #include "predict_post.h"
 #include "Grasp.h"
 
@@ -49,12 +49,19 @@
 
 int main()
 {
-	int back_code = 0;
+	/*int back_code = 0;
 	char url_[] = "http://192.168.3.39:5000/predict";
 	char rgb[] = "./data/rgb.jpg";
 	char depth[] = "./data/depth.png";
 	std::vector<cv::Point> ps;
-	back_code =Predict_Post::start_predict(url_, rgb, depth, ps);
+	back_code =Predict_Post::start_predict(url_, rgb, depth, ps);*/
+
+
+	std::vector<double>dis = { -0.263800155103853, 0.145978275196663, -0.0808361022675977, -0.000373220970137041,	0.000490335127893494 };
+	Camera_Intrinsics cam(1154.6, 1155.5, 613.4968, 449.4059, dis);
+
+	ImgProcess_TY img_TY(cam);
+	img_TY.getImage("", "");
 
 	system("pause");
 	return 0;

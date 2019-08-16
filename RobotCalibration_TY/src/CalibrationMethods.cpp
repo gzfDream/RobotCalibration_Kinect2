@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CalibrationMethods.h"
-
+#include "ImgProcess_TY.h"
+#include "CameraCalibration.h"
 
 CalibrationMethods::CalibrationMethods()
 {
@@ -72,6 +73,13 @@ static  cv::Mat vector_To_Mat(Mat&A)
 	return dst;
 }
 
+// 将cv::Point3d转成eigen::vector3d
+static Eigen::Vector3d cvPoint3d_eigenVector3d(cv::Point3d p) {
+	Eigen::Vector3d res(p.x, p.y, p.z);
+
+	return res;
+}
+
 
 //优化的手眼标定Ax=xB
 Mat CalibrationMethods::HandEyeMethod(const vector<Mat>Hgij, const vector<Mat>Hcij)
@@ -136,12 +144,6 @@ Mat CalibrationMethods::HandEyeMethod(const vector<Mat>Hgij, const vector<Mat>Hc
 	return dst;
 }
 
-// 将cv::Point3d转成eigen::vector3d
-Eigen::Vector3d cvPoint3d_eigenVector3d(cv::Point3d p) {
-	Eigen::Vector3d res(p.x, p.y, p.z);
-
-	return res;
-}
 
 // 三点法
 cv::Mat CalibrationMethods::ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY)
@@ -333,7 +335,7 @@ void CalibrationMethods::mwArray2eigenMat(const mwArray& arr, Eigen::Matrix4d& m
 		arr.Get(1, 4), arr.Get(1, 8), arr.Get(1, 12), arr.Get(1, 16);
 }
 
-void CalibrationMethods::Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op) {
+void CalibrationMethods::Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op, cv::Mat& endHcal_op) {
 	if (!mclInitializeApplication(nullptr, 0)) {
 		std::cerr << "Could not initialize the application properly" << std::endl;
 		return;
@@ -377,14 +379,17 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 			CalCamArm_(4, TBase, TEnd, cameraParams, pixelErr, imageFolder, armMat, squareSize, baseEst);
 			std::cout << "TBase: " << TBase << endl;
 
-			Eigen::Matrix4d result;
+			Eigen::Matrix4d result, calHend;
 			mwArray2eigenMat(TBase, result);
+			mwArray2eigenMat(TEnd, calHend);
 			// std::cout << "result: " << result << endl;
 
 			Eigen::Matrix4d result_inv = result.inverse();
+			Eigen::Matrix4d calHend_inv = calHend.inverse();
 			// std::cout << "result_inv: " << result_inv << endl;
 
 			cv::eigen2cv(result_inv, baseHcam_op);
+			cv::eigen2cv(calHend_inv, endHcal_op);
 		}
 		catch (const mwException& e) {
 			std::cerr << e.what() << std::endl;
@@ -399,4 +404,27 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 	}
 
 	mclTerminateApplication();
+}
+
+void CalibrationMethods::Calibration_PrecisionTest(const cv::Mat& baseHcam_op, const cv::Mat& endHcal_op)
+{
+	std::string str = "";
+	ImgProcess_TY::getImage(str, true);
+	
+	double markerRealSize = 2.;//cm
+	CameraCalibration cam = CameraCalibration(markerRealSize);
+
+	//相机内参
+	Camera_Intrinsics camera_ins_H;
+	camera_ins_H.FLX = 1933.037839984974;
+	camera_ins_H.FLY = 1949.554793781403;
+	camera_ins_H.PPX = 983.8643660960072;
+	camera_ins_H.PPY = 495.4767992148006;
+
+	// 相机畸变
+	double distCoeffD[5] = { 0.04012892375375712, -0.007314429288468308, -0.01186231085084112, -0.003724066345932373, 0.3225867897472355 };
+	
+	// 外参矩阵
+	cv::Mat extern_mat;
+	cam.external_reference_calibration_singleImage(camera_ins_H, distCoeffD, str, extern_mat);
 }

@@ -333,7 +333,7 @@ void CalibrationMethods::mwArray2eigenMat(const mwArray& arr, Eigen::Matrix4d& m
 		arr.Get(1, 4), arr.Get(1, 8), arr.Get(1, 12), arr.Get(1, 16);
 }
 
-void CalibrationMethods::Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op) {
+void CalibrationMethods::Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op, cv::Mat& endHcal_op) {
 	if (!mclInitializeApplication(nullptr, 0)) {
 		std::cerr << "Could not initialize the application properly" << std::endl;
 		return;
@@ -377,14 +377,17 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 			CalCamArm_(4, TBase, TEnd, cameraParams, pixelErr, imageFolder, armMat, squareSize, baseEst);
 			std::cout << "TBase: " << TBase << endl;
 
-			Eigen::Matrix4d result;
+			Eigen::Matrix4d result, calHend;
 			mwArray2eigenMat(TBase, result);
+			mwArray2eigenMat(TEnd, calHend);
 			// std::cout << "result: " << result << endl;
 
 			Eigen::Matrix4d result_inv = result.inverse();
+			Eigen::Matrix4d calHend_inv = calHend.inverse();
 			// std::cout << "result_inv: " << result_inv << endl;
 
 			cv::eigen2cv(result_inv, baseHcam_op);
+			cv::eigen2cv(calHend_inv, endHcal_op);
 		}
 		catch (const mwException& e) {
 			std::cerr << e.what() << std::endl;
@@ -399,4 +402,10 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 	}
 
 	mclTerminateApplication();
+}
+
+void CalibrationMethods::Calibration_PrecisionTest(const cv::Mat& baseHcam_op, const cv::Mat& endHcal_op)
+{
+	
+
 }

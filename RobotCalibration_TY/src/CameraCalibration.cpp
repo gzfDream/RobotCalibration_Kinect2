@@ -57,7 +57,7 @@ CameraCalibration::~CameraCalibration()
 }
 
 
-void CameraCalibration::corner_detection(std::string &imgpath) {
+bool CameraCalibration::corner_detection(std::string &imgpath) {
 	cv::Mat img_color = cv::imread(imgpath, cv::IMREAD_COLOR);
 
 	//翻转
@@ -77,31 +77,36 @@ void CameraCalibration::corner_detection(std::string &imgpath) {
 		//cv::CALIB_CB_NORMALIZE_IMAGE
 	);
 
-	//指定亚像素计算迭代标注  
-	cv::TermCriteria criteria = cv::TermCriteria(
-		cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
-		40,
-		0.1);
+	if (ret) {
+		//指定亚像素计算迭代标注  
+		cv::TermCriteria criteria = cv::TermCriteria(
+			cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
+			40,
+			0.1);
 
-	//亚像素检测  
-	cv::cornerSubPix(image_gray, corners, cv::Size(5, 5), cv::Size(-1, -1), criteria);
+		//亚像素检测  
+		cv::cornerSubPix(image_gray, corners, cv::Size(5, 5), cv::Size(-1, -1), criteria);
 
-	m_markerCorners2d.push_back(corners[0]);
-	m_markerCorners2d.push_back(corners[24]);
-	m_markerCorners2d.push_back(corners[48]);
-	m_markerCorners2d.push_back(corners[53]);
-	m_markerCorners2d.push_back(corners[29]);
-	m_markerCorners2d.push_back(corners[5]);
-	m_markerCorners2d.push_back(corners[13]);
-	m_markerCorners2d.push_back(corners[37]);
-	m_markerCorners2d.push_back(corners[40]);
-	m_markerCorners2d.push_back(corners[16]);
+		m_markerCorners2d.push_back(corners[0]);
+		m_markerCorners2d.push_back(corners[24]);
+		m_markerCorners2d.push_back(corners[48]);
+		m_markerCorners2d.push_back(corners[53]);
+		m_markerCorners2d.push_back(corners[29]);
+		m_markerCorners2d.push_back(corners[5]);
+		m_markerCorners2d.push_back(corners[13]);
+		m_markerCorners2d.push_back(corners[37]);
+		m_markerCorners2d.push_back(corners[40]);
+		m_markerCorners2d.push_back(corners[16]);
 
+		return true;
+	}
+	else
+		return false;
 }
 
 
 // 计算一张图片对应的外参
-void CameraCalibration::calibration(const cv::Matx33f& camera_matrix, const cv::Matx<float, 5, 1>& distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec) {
+bool CameraCalibration::calibration(const cv::Matx33f& camera_matrix, const cv::Matx<float, 5, 1>& distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec) {
 
 	for (int i = 0; i < m_markerCorners2d.size(); i++)
 	{
@@ -113,25 +118,32 @@ void CameraCalibration::calibration(const cv::Matx33f& camera_matrix, const cv::
 	cv::Mat(m_markerCorners3d).convertTo(objPM, CV_32F);
 
 	//cv::solvePnPRansac(objPM, cv::Mat(m_markerCorners2d), camera_matrix, distortion_coefficients, rvec, tvec);
-	cv::solvePnP(objPM, cv::Mat(m_markerCorners2d), camera_matrix, distortion_coefficients, rvec, tvec);
+	bool ret = cv::solvePnP(objPM, cv::Mat(m_markerCorners2d), camera_matrix, distortion_coefficients, rvec, tvec);
 
-	cv::Mat objPM1;
-	//m_markerCorners3d.push_back(cv::Point3f(22.2, -11.7, 6.4));
-	cv::Mat(m_markerCorners3d).convertTo(objPM1, CV_32F);
+	if (ret) {
+		cv::Mat objPM1;
+		//m_markerCorners3d.push_back(cv::Point3f(22.2, -11.7, 6.4));
+		cv::Mat(m_markerCorners3d).convertTo(objPM1, CV_32F);
 
-	std::vector<cv::Point2f> projectedPoints;
-	cv::projectPoints(objPM1, rvec, tvec, camera_matrix, distortion_coefficients, projectedPoints);
+		std::vector<cv::Point2f> projectedPoints;
+		cv::projectPoints(objPM1, rvec, tvec, camera_matrix, distortion_coefficients, projectedPoints);
 
-	for (unsigned int i = 0; i < projectedPoints.size(); ++i)
-	{
-		circle(image_color, projectedPoints[i], 1.5, cv::Scalar(255, 0, 0), -1, 8);
+		for (unsigned int i = 0; i < projectedPoints.size(); ++i)
+		{
+			circle(image_color, projectedPoints[i], 1.5, cv::Scalar(255, 0, 0), -1, 8);
+		}
+		cv::imshow("chessboard corners", image_color);
+		cv::waitKey(550);
+		//cv::imshow("chessboard corners", image_color2);
+		//cv::waitKey(0);
+		std::cout << "R:\n" << rvec << std::endl;
+		std::cout << "T:\n" << tvec << std::endl;
+
+		return true;
 	}
-	cv::imshow("chessboard corners", image_color);
-	cv::waitKey(550);
-	//cv::imshow("chessboard corners", image_color2);
-	//cv::waitKey(0);
-	std::cout << "R:\n" << rvec << std::endl;
-	std::cout << "T:\n" << tvec << std::endl;
+	else
+		return false;
+	
 }
 
 
@@ -166,7 +178,7 @@ cv::Mat CameraCalibration::process_transMatrix(const cv::Mat& rvec, const cv::Ma
 
 
 //计算外参
-void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], 
+bool CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], 
 														std::string imgpath, std::string calibFile, std::vector<cv::Mat>& vec_res) {
 
 	// 设置相机内参
@@ -190,32 +202,76 @@ void CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 
 	cv::Mat rvec, tvec;
 	std::ofstream ofsCalib(calibFile);
+
 	for (int i = 0; i < img_files.size(); i++)
 	{
-		corner_detection(img_files[i]);
-		calibration(camera_matrix, distortion_coefficients, rvec, tvec);
+		if (corner_detection(img_files[i]) && calibration(camera_matrix, distortion_coefficients, rvec, tvec)) {
+			trans_mat = process_transMatrix(rvec, tvec);
+			vec_res.push_back(trans_mat);
 
-		trans_mat = process_transMatrix(rvec, tvec);
-		vec_res.push_back(trans_mat);
-
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++)
-			{
-				ofsCalib << trans_mat.at<float>(i, j) << " ";
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++)
+				{
+					ofsCalib << trans_mat.at<float>(i, j) << " ";
+				}
+				ofsCalib << std::endl;
 			}
-			ofsCalib << std::endl;
+			m_markerCorners2d.clear();
+			image_color.release();
+			rvec.release();
+			tvec.release();
 		}
+		else
+		{
+			std::cout << "error：计算外参失败！" <<std::endl;
+			ofsCalib.close();
+			cv::destroyAllWindows();
+			return false;
+		}
+	}
+
+	ofsCalib.close();
+	cv::destroyAllWindows();
+	return true;
+}
+
+
+bool CameraCalibration::external_reference_calibration_singleImage(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, cv::Mat& external_mat)
+{
+	// 设置相机内参
+	cv::Matx33f camera_matrix;
+	cv::Matx<float, 5, 1> distortion_coefficients;
+
+	double camD[9] = { camera_ins_H.FLX, 0, camera_ins_H.PPX,
+							0, camera_ins_H.FLY, camera_ins_H.PPY,
+							0, 0, 1 };
+
+	camera_matrix = cv::Mat(3, 3, CV_64FC1, camD);
+	distortion_coefficients = cv::Mat(5, 1, CV_64FC1, distCoeffD);
+
+	std::cout << "camera_matrix: " << camera_matrix << std::endl;
+	std::cout << "distortion_coefficients: " << distortion_coefficients << std::endl;
+
+	cv::Mat rvec, tvec;
+
+	if (corner_detection(imgpath) && calibration(camera_matrix, distortion_coefficients, rvec, tvec)) {
+		external_mat = process_transMatrix(rvec, tvec);
+
 		m_markerCorners2d.clear();
 		image_color.release();
 		rvec.release();
 		tvec.release();
 	}
+	else
+	{
+		std::cout << "error：计算外参失败！" << std::endl;
+		cv::destroyAllWindows();
+		return false;
+	}
 
-	ofsCalib.close();
 	cv::destroyAllWindows();
-	return;
+	return true;
 }
-
 
 // 计算相机内参
 void CameraCalibration::internal_reference_calibration(std::string img_path, std::string internal_file, Camera_Intrinsics& cam_in, double distCoeffD[5]) {
@@ -229,7 +285,7 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 	std::cout << "开始提取角点………………";
 	int image_count = 0;  /* 图像数量 */
 	cv::Size image_size;  /* 图像的尺寸 */
-	cv::Size board_size = cv::Size(9, 6);    /* 标定板上每行、列的角点数 */
+	cv::Size board_size = cv::Size(11, 8);    /* 标定板上每行、列的角点数 */
 	std::vector<cv::Point2f> image_points_buf;  /* 缓存每幅图像上检测到的角点 */
 	std::vector<std::vector<cv::Point2f>> image_points_seq; /* 保存检测到的所有角点 */
 
@@ -253,7 +309,7 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 		if (0 == findChessboardCorners(imageInput, board_size, image_points_buf))
 		{
 			std::cout << "can not find chessboard corners!\n"; //找不到角点
-			exit(1);
+			return;
 		}
 		else
 		{

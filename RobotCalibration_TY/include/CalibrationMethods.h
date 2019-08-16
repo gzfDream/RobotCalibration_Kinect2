@@ -48,10 +48,21 @@ public:
 
 
 	/*
-	*	@brief	标定结果优化
+	*	@brief		标定结果优化
+	*	@param		img_path		图片路径
+	*	@param		armMat_path		胳膊末端变换矩阵路径
+	*	@param		baseHcam		手眼变换矩阵初始
+	*	@param		baseHcam_op		优化结果
+	*/
+	void Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op, cv::Mat& endHcal_op);
+
+
+	/*
+	*	@brief	标定精度测量
 	*
 	*/
-	void Calibration_Optimization(string img_path, string armMat_path, const cv::Mat& baseHcam, cv::Mat& baseHcam_op);
+	void Calibration_PrecisionTest(const cv::Mat& baseHcam_op, const cv::Mat& endHcal_op);
+
 
 private:
 

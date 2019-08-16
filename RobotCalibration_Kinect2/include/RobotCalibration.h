@@ -103,9 +103,9 @@ void CalibrationFunc() {
 
 		case 'o':
 		{
-			cv::Mat result;
+			cv::Mat result, endHcal;
 			CalibrationMethods c;
-			c.Calibration_Optimization(cam_cal_file, robot_pose_file, res_mat, result);
+			c.Calibration_Optimization(cam_cal_file, robot_pose_file, res_mat, result, endHcal);
 			std::cout << result << endl;
 			break;
 		}

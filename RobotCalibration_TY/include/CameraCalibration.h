@@ -33,10 +33,23 @@ public:
 
 	/*
 	*	@brief:	计算相机外参(路径下所有图片对应的外参)
+	*   @param: camera_ins_H	相机内参
+	*	@param：	distCoeffD	畸变参数
 	*	@param:	imgpath		图片路径
 	*	@param:	calibFile	存储计算结果路径
+	*   @param: vec_res		外参
 	*/
-	void external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, std::string calibFile, std::vector<cv::Mat>& vec_res);
+	bool external_reference_calibration(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, std::string calibFile, std::vector<cv::Mat>& vec_res);
+
+
+	/*
+	*	@brief:	计算相机外参(单张图片)
+	*   @param: camera_ins_H	相机内参
+	*	@param：	distCoeffD	畸变参数
+	*	@param:	imgpath		图片路径
+	*	@param:	external_mat	外参		
+	*/
+	bool external_reference_calibration_singleImage(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, cv::Mat& external_mat);
 
 
 private:
@@ -45,7 +58,7 @@ private:
 	*	@brief:	检测角点
 	*	@param:	imgpath		图片路径
 	*/
-	void corner_detection(std::string &imgpath);
+	bool corner_detection(std::string &imgpath);
 
 
 	/*
@@ -55,7 +68,7 @@ private:
 	*   @param:	rvec	旋转向量
 	*   @param: tvec	平移向量
 	*/
-	void calibration(const cv::Matx33f& camera_matrix, const cv::Matx<float, 5, 1>& distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec);
+	bool calibration(const cv::Matx33f& camera_matrix, const cv::Matx<float, 5, 1>& distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec);
 
 
 	/*
