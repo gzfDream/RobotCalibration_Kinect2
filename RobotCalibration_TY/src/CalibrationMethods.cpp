@@ -244,6 +244,47 @@ cv::Mat CalibrationMethods::ThreePointsCalibration(cv::Point3d pointO, cv::Point
 }
 
 
+// 求解endHcal
+// baseHend1*endHcal*calHcam1 = baseHend2*endHcal*calHcam2
+// inv(baseHend2)*baseHend1*calHcam = calHcam*calHcam2*inv(calHcam1)
+
+void CalibrationMethods::Method_get_endHcal(std::string robot, std::string cam_cal, cv::Mat& endHcal) {
+	cv::Mat Hcg(4, 4, CV_64FC1);
+	vector<cv::Mat> Hgij;
+	vector<cv::Mat> Hcij;
+	std::vector<cv::Mat> baseHend;
+	std::vector<cv::Mat> calHcam;
+	cv::Mat matA(4, 4, CV_64FC1), matB(4, 4, CV_64FC1);
+
+	// 读取机械臂末端位姿
+	baseHend = readf_vec(robot);
+	// 读取相机和标定板的变换矩阵
+	calHcam = readf_vec(cam_cal);
+
+	if (baseHend.size() == calHcam.size())
+		for (int i = 0; i < baseHend.size() - 1; i++)
+		{
+			matA = baseHend[i + 1].inv() * baseHend[i];
+			matB = calHcam[i + 1] * calHcam[i].inv();
+
+			Hgij.push_back(matA);
+			Hcij.push_back(matB);
+
+			//cout << "matA" << matA << endl;
+			//cout << "matB" << matB << endl;
+
+			matA.release();
+			matB.release();
+		}
+
+	Hcg = HandEyeMethod(Hgij, Hcij);
+
+	endHcal = Hcg;
+	cout << "endHcal: \n" << endl << endHcal << endl;
+	
+	return;
+}
+
 /*
 * [calHcam1] * camHrobot*[robotHend1] = [calHcam2] * camHrobot*[robotHend2]
 * inv([calHcam2]) * [calHcam1] * camHrobot = camHrobot * [robotHend2] * inv([robotHend1])
@@ -275,8 +316,8 @@ void CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_
 			Hgij.push_back(matA);
 			Hcij.push_back(matB);
 
-			cout << "matA" << matA << endl;
-			cout << "matB" << matB << endl;
+			//cout << "matA" << matA << endl;
+			//cout << "matB" << matB << endl;
 
 			matA.release();
 			matB.release();
@@ -286,11 +327,11 @@ void CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_
 	*/
 	Hcg = HandEyeMethod(Hgij, Hcij);
 
-	cout << "Hcg: \n" << Hcg << endl;
+	// cout << "Hcg: \n" << Hcg << endl;
 
 	// camHbase -> baseHcam
 	m_result = Hcg.inv();
-	cout << "result: \n" << m_result << endl;
+	cout << "baseHcam: \n" << m_result << endl;
 	std::ofstream ofsCalib(result_file);
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++)
@@ -379,17 +420,14 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 			CalCamArm_(4, TBase, TEnd, cameraParams, pixelErr, imageFolder, armMat, squareSize, baseEst);
 			std::cout << "TBase: " << TBase << endl;
 
-			Eigen::Matrix4d result, calHend;
-			mwArray2eigenMat(TBase, result);
-			mwArray2eigenMat(TEnd, calHend);
-			// std::cout << "result: " << result << endl;
+			Eigen::Matrix4d camHbase, endHcal;
+			mwArray2eigenMat(TBase, camHbase);
+			mwArray2eigenMat(TEnd, endHcal);
 
-			Eigen::Matrix4d result_inv = result.inverse();
-			Eigen::Matrix4d calHend_inv = calHend.inverse();
-			// std::cout << "result_inv: " << result_inv << endl;
+			Eigen::Matrix4d baseHcam = camHbase.inverse();
 
-			cv::eigen2cv(result_inv, baseHcam_op);
-			cv::eigen2cv(calHend_inv, endHcal_op);
+			cv::eigen2cv(baseHcam, baseHcam_op);
+			cv::eigen2cv(endHcal, endHcal_op);
 		}
 		catch (const mwException& e) {
 			std::cerr << e.what() << std::endl;
@@ -406,25 +444,24 @@ void CalibrationMethods::Calibration_Optimization(string img_path, string armMat
 	mclTerminateApplication();
 }
 
-void CalibrationMethods::Calibration_PrecisionTest(const cv::Mat& baseHcam_op, const cv::Mat& endHcal_op)
+void CalibrationMethods::Calibration_PrecisionTest(const cv::Mat& baseHcam_op, const cv::Mat& endHcal_op, const Camera_Intrinsics& camera_ins_H, double distCoeffD[5])
 {
-	std::string str = "";
-	ImgProcess_TY::getImage(str, true);
+	std::string str = ".\\data\\ImagesForTest\\00.png";
+	// ImgProcess_TY::getImage(str, false);
 	
 	double markerRealSize = 2.;//cm
-	CameraCalibration cam = CameraCalibration(markerRealSize);
-
-	//相机内参
-	Camera_Intrinsics camera_ins_H;
-	camera_ins_H.FLX = 1933.037839984974;
-	camera_ins_H.FLY = 1949.554793781403;
-	camera_ins_H.PPX = 983.8643660960072;
-	camera_ins_H.PPY = 495.4767992148006;
-
-	// 相机畸变
-	double distCoeffD[5] = { 0.04012892375375712, -0.007314429288468308, -0.01186231085084112, -0.003724066345932373, 0.3225867897472355 };
+	CameraCalibration cam = CameraCalibration(markerRealSize, cv::Size(6,9));
 	
 	// 外参矩阵
-	cv::Mat extern_mat;
-	cam.external_reference_calibration_singleImage(camera_ins_H, distCoeffD, str, extern_mat);
+	cv::Mat calHcam;
+	cam.external_reference_calibration_singleImage(camera_ins_H, distCoeffD, str, calHcam);
+	// cam.external_reference_calibration_singleImage_MATLAB(camera_ins_H, distCoeffD, str, calHcam);
+
+	std::cout << "baseHcam_op: " << std::endl << baseHcam_op << std::endl;
+	std::cout << "endHcal_op: " << std::endl << endHcal_op << std::endl;
+	std::cout << "calHcam: " << std::endl << calHcam << std::endl;
+
+	cv::Mat baseHend = baseHcam_op* calHcam.inv() * endHcal_op.inv();
+	std::cout << baseHend << std::endl;
+
 }

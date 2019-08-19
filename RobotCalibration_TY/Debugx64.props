@@ -10,7 +10,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\MATLAB\R2017b\extern\lib\win64\microsoft;$(OPENCV_LIB346);..\Dependencies\TY\libs_TY\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sample_commond.lib;tycam.lib;cloud_viewerd.lib;freeglut_staticd.lib;libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;opencv_world346d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>getCameraExtrinsics_64.lib;cameraCalibrator_64.lib;CalCamArm_64.lib;sample_commond.lib;tycam.lib;cloud_viewerd.lib;freeglut_staticd.lib;libmx.lib;libmat.lib;mclmcr.lib;mclmcrrt.lib;opencv_world346d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

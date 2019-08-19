@@ -2,7 +2,7 @@
 #include <opencv2/core/eigen.hpp>
 #include "CalCamArm_64.h"
 
-#pragma comment(lib,"CalCamArm_64.lib")
+// #pragma comment(lib,"CalCamArm_64.lib")
 
 /*
 *	@brief	手眼标定的方法，包括六点法和标定板法（标定板固定在机械臂末端）
@@ -28,11 +28,14 @@ public:
 	*/
 	void Method_BoardOnRobot(std::string robot, std::string cam_cal, std::string result_file, cv::Mat& m_result);
 
-	
+
 	/*
-	*	@brief	六点法工具位姿估计
-	*
+	*	@brief		计算机械臂末端和标定板的变换关系 endHcal
+	*	@param		robot		机械臂末端不同位置对应变换矩阵 baseHend
+	*   @param		cam_cal		相机到棋盘格变换矩阵 calHcam
+	*   @return		返回相机到机械臂坐标系变换矩阵 endHcal
 	*/
+	void Method_get_endHcal(std::string robot, std::string cam_cal, cv::Mat& endHcal);
 
 
 	/*
@@ -58,19 +61,22 @@ public:
 
 
 	/*
-	*	@brief	标定精度测量
-	*
+	*	@brief		标定精度测量
+	*	@param		baseHcam_op		
+	*	@param		endHcal_op		
+	*	@param		camera_ins_H		
+	*	@param		distCoeffD		
 	*/
-	void Calibration_PrecisionTest(const cv::Mat& baseHcam_op, const cv::Mat& endHcal_op);
+	void Calibration_PrecisionTest(const cv::Mat& baseHcam_op, const cv::Mat& endHcal_op, const Camera_Intrinsics& camera_ins_H, double distCoeffD[5]);
 
 
 private:
 
 	/*
-	*	@brief	求解方程组 Ax=xB
-	*	@param	Hgij	相机到标定板的变换矩阵 calHcam
-	*   @param	Hcij	机械臂末端到机械臂基座的变换矩阵 baseHend
-	*   @return 返回机械臂到相机的变换矩阵 camHbase
+	*	@brief		求解方程组 Ax=xB
+	*	@param		Hgij		相机到标定板的变换矩阵 calHcam
+	*   @param		Hcij		机械臂末端到机械臂基座的变换矩阵 baseHend
+	*   @return		返回机械臂到相机的变换矩阵 camHbase
 	*/
 	cv::Mat HandEyeMethod(const vector<Mat>Hgij, const vector<Mat>Hcij);
 

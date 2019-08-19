@@ -10,6 +10,9 @@
 #include <opencv2/opencv.hpp>
 #include <fstream>
 #include <iostream>
+
+#include "cameraCalibrator_64.h"
+#include "getCameraExtrinsics_64.h"
 class CameraCalibration
 {
 public:
@@ -18,7 +21,7 @@ public:
 	*	@brief:	构造函数
 	*	@param:	markerRealSize		棋盘格真实尺寸（厘米）
 	*/
-	CameraCalibration(double &markerRealSize);
+	CameraCalibration(const double &markerRealSize, const cv::Size& chessboard_size_);
 	~CameraCalibration();
 
 
@@ -26,9 +29,22 @@ public:
 	*	@brief:	计算相机内参
 	*	@param  img_files	图片路径
 	*   @param  internal_file	保存路径
+	*   @param	cam_in	内参矩阵
+	*   @param  distCoeffD	畸变
 	*   @reference link:https://my.oschina.net/abcijkxyz/blog/787659
 	*/
 	void internal_reference_calibration(std::string img_files, std::string internal_file, Camera_Intrinsics& cam_in, double distCoeffD[5]);
+
+
+	/*
+	*	@brief:	计算相机内参 MATLAB
+	*	@param  img_files	图片路径
+	*   @param  internal_file	保存路径
+	*   @param	cam_in	内参矩阵
+	*   @param  distCoeffD	畸变
+	
+	*/
+	void internal_reference_calibration_MATLAB(std::string img_files, std::string internal_file, Camera_Intrinsics& cam_in, double distCoeffD[5]);
 
 
 	/*
@@ -47,9 +63,19 @@ public:
 	*   @param: camera_ins_H	相机内参
 	*	@param：	distCoeffD	畸变参数
 	*	@param:	imgpath		图片路径
-	*	@param:	external_mat	外参		
+	*	@param:	external_mat	外参	calHcam	
 	*/
 	bool external_reference_calibration_singleImage(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, cv::Mat& external_mat);
+
+
+	/*
+	*	@brief:	计算相机外参(单张图片, 使用MATLAB)
+	*   @param: camera_ins_H	相机内参
+	*	@param：	distCoeffD	畸变参数
+	*	@param:	imgpath		图片路径
+	*	@param:	external_mat	外参calHcam
+	*/
+	bool external_reference_calibration_singleImage_MATLAB(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string img_path, cv::Mat &external_mat);
 
 
 private:
@@ -77,6 +103,11 @@ private:
 	cv::Mat process_transMatrix(const cv::Mat& rvec, const cv::Mat& tvec);
 
 
+	/*
+	*	@brief: 将mwArray转成cvMat
+	*/
+	void mwArray2cvMat(const mwArray& arr, cv::Mat& mat);
+
 private:
 
 	std::vector<cv::Point3f> m_markerCorners3d;
@@ -84,5 +115,7 @@ private:
 
 	cv::Mat image_color;
 	
+	cv::Size chessboard_size;   //棋盘格格式 n*m
+	int markerRealSize = 0;     //棋盘格真实尺寸
 };
 

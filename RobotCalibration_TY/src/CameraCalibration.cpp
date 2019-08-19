@@ -37,9 +37,9 @@ static void getAllFiles(std::string path, std::vector<std::string>& files)
 }
 
 
-CameraCalibration::CameraCalibration(double &markerRealSize)
+CameraCalibration::CameraCalibration(const double &markerRealSize_, const cv::Size& chessboard_size_)
 {
-	m_markerCorners3d.push_back(cv::Point3f(0., 0., 0.));
+	/*m_markerCorners3d.push_back(cv::Point3f(0., 0., 0.));
 	m_markerCorners3d.push_back(cv::Point3f(4. * markerRealSize, 0., 0.));
 	m_markerCorners3d.push_back(cv::Point3f(8. * markerRealSize, 0., 0.));
 	m_markerCorners3d.push_back(cv::Point3f(8. * markerRealSize, 5. * markerRealSize, 0.));
@@ -48,7 +48,23 @@ CameraCalibration::CameraCalibration(double &markerRealSize)
 	m_markerCorners3d.push_back(cv::Point3f(2. * markerRealSize, 1. * markerRealSize, 0.));
 	m_markerCorners3d.push_back(cv::Point3f(6. * markerRealSize, 1. * markerRealSize, 0.));
 	m_markerCorners3d.push_back(cv::Point3f(6. * markerRealSize, 4. * markerRealSize, 0.));
-	m_markerCorners3d.push_back(cv::Point3f(2. * markerRealSize, 4. * markerRealSize, 0.));
+	m_markerCorners3d.push_back(cv::Point3f(2. * markerRealSize, 4. * markerRealSize, 0.));*/
+
+	chessboard_size = chessboard_size_;
+	markerRealSize = markerRealSize_;
+
+	for (int i = 0; i < chessboard_size.height; i++)
+	{
+		for (int j = 0; j < chessboard_size.width; j++)
+		{
+			cv::Point3f realPoint;
+			/* 假设标定板放在世界坐标系中z=0的平面上 */
+			realPoint.x = j * markerRealSize;
+			realPoint.y = i * markerRealSize;
+			realPoint.z = 0;
+			m_markerCorners3d.push_back(realPoint);
+		}
+	}
 }
 
 
@@ -69,8 +85,8 @@ bool CameraCalibration::corner_detection(std::string &imgpath) {
 
 	std::vector<cv::Point2f> corners, corner_t;
 
-	bool ret = cv::findChessboardCorners(image_gray,
-		cv::Size(6, 9),
+	bool ret = cv::findChessboardCorners(image_gray, chessboard_size,
+		//cv::Size(6, 9),
 		corners//,
 		//cv::CALIB_CB_ADAPTIVE_THRESH |
 		//CV_CALIB_CB_FAST_CHECK |
@@ -87,7 +103,7 @@ bool CameraCalibration::corner_detection(std::string &imgpath) {
 		//亚像素检测  
 		cv::cornerSubPix(image_gray, corners, cv::Size(5, 5), cv::Size(-1, -1), criteria);
 
-		m_markerCorners2d.push_back(corners[0]);
+		/*m_markerCorners2d.push_back(corners[0]);
 		m_markerCorners2d.push_back(corners[24]);
 		m_markerCorners2d.push_back(corners[48]);
 		m_markerCorners2d.push_back(corners[53]);
@@ -96,7 +112,20 @@ bool CameraCalibration::corner_detection(std::string &imgpath) {
 		m_markerCorners2d.push_back(corners[13]);
 		m_markerCorners2d.push_back(corners[37]);
 		m_markerCorners2d.push_back(corners[40]);
+		m_markerCorners2d.push_back(corners[16]);*/
+
+		/*m_markerCorners2d.push_back(corners[5]);
+		m_markerCorners2d.push_back(corners[29]);
+		m_markerCorners2d.push_back(corners[53]);
+		m_markerCorners2d.push_back(corners[48]);
+		m_markerCorners2d.push_back(corners[24]);
+		m_markerCorners2d.push_back(corners[0]);
 		m_markerCorners2d.push_back(corners[16]);
+		m_markerCorners2d.push_back(corners[40]);
+		m_markerCorners2d.push_back(corners[37]);
+		m_markerCorners2d.push_back(corners[13]);*/
+
+		m_markerCorners2d = corners;
 
 		return true;
 	}
@@ -105,14 +134,17 @@ bool CameraCalibration::corner_detection(std::string &imgpath) {
 }
 
 
-// 计算一张图片对应的外参
+// 计算一张图片对应的外参（private）
 bool CameraCalibration::calibration(const cv::Matx33f& camera_matrix, const cv::Matx<float, 5, 1>& distortion_coefficients, cv::Mat &rvec, cv::Mat &tvec) {
 
 	for (int i = 0; i < m_markerCorners2d.size(); i++)
 	{
-		cv::circle(image_color, m_markerCorners2d[i], 1, cv::Scalar(255, 40 * i, 255), 2);
+		cv::circle(image_color, m_markerCorners2d[i], 1, cv::Scalar(255, 5 * i, 255), 2);
+		cv::putText(image_color, std::to_string(i), m_markerCorners2d[i], 1, 1, cv::Scalar(255, 0, 0));
 	}
-	cv::circle(image_color, m_markerCorners2d[0], 1, cv::Scalar(0, 0, 255), 4);
+	cv::circle(image_color, m_markerCorners2d[0], 3, cv::Scalar(0, 0, 255), 4);
+	cv::arrowedLine(image_color, m_markerCorners2d[0], m_markerCorners2d[chessboard_size.width-1], cv::Scalar(0, 0, 255), 2);
+	cv::arrowedLine(image_color, m_markerCorners2d[0], m_markerCorners2d[chessboard_size.width*(chessboard_size.height-1)], cv::Scalar(0, 255, 0), 2);
 
 	cv::Mat objPM;
 	cv::Mat(m_markerCorners3d).convertTo(objPM, CV_32F);
@@ -136,8 +168,8 @@ bool CameraCalibration::calibration(const cv::Matx33f& camera_matrix, const cv::
 		cv::waitKey(550);
 		//cv::imshow("chessboard corners", image_color2);
 		//cv::waitKey(0);
-		std::cout << "R:\n" << rvec << std::endl;
-		std::cout << "T:\n" << tvec << std::endl;
+		// std::cout << "R:\n" << rvec << std::endl;
+		// std::cout << "T:\n" << tvec << std::endl;
 
 		return true;
 	}
@@ -145,6 +177,7 @@ bool CameraCalibration::calibration(const cv::Matx33f& camera_matrix, const cv::
 		return false;
 	
 }
+
 
 
 cv::Mat CameraCalibration::process_transMatrix(const cv::Mat& rvec, const cv::Mat& tvec) {
@@ -168,7 +201,7 @@ cv::Mat CameraCalibration::process_transMatrix(const cv::Mat& rvec, const cv::Ma
 	trans_mat.at<float>(3, 2) = 0;
 	trans_mat.at<float>(3, 3) = 1;
 
-	std::cout << "trans_mat:\n" << trans_mat << std::endl;
+	// std::cout << "trans_mat:\n" << trans_mat << std::endl;
 
 	//camHcal->calHcam
 	trans_mat = trans_mat.inv();
@@ -236,6 +269,7 @@ bool CameraCalibration::external_reference_calibration(Camera_Intrinsics camera_
 }
 
 
+//计算单张图片外参
 bool CameraCalibration::external_reference_calibration_singleImage(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string imgpath, cv::Mat& external_mat)
 {
 	// 设置相机内参
@@ -273,6 +307,70 @@ bool CameraCalibration::external_reference_calibration_singleImage(Camera_Intrin
 	return true;
 }
 
+
+bool CameraCalibration::external_reference_calibration_singleImage_MATLAB(Camera_Intrinsics camera_ins_H, double distCoeffD[5], std::string img_path, cv::Mat &external_mat)
+{
+	if (!mclInitializeApplication(nullptr, 0)) {
+		std::cerr << "Could not initialize the application properly" << std::endl;
+		return false;
+	}
+
+	if (!getCameraExtrinsics_64Initialize()) {
+		std::cerr << "Could not initialize the library properly" << std::endl;
+		return false;
+	}
+	else {
+		try {
+
+			// 输出参数
+			mwArray calHcam;
+			// 输入参数
+			mwArray image_path(img_path.c_str());
+			mwArray IntrinsicMatrix(3, 3, mxDOUBLE_CLASS, mxREAL);;
+			mwArray Distortion(1, 5, mxDOUBLE_CLASS, mxREAL);
+
+			double tmp[] = {
+				camera_ins_H.FLX, 0, 0,
+				0, camera_ins_H.FLY, 0,
+				camera_ins_H.PPX, camera_ins_H.PPY, 1
+			};
+			IntrinsicMatrix.SetData(tmp, 9);
+			Distortion.SetData(distCoeffD, 5);
+			std::cout << IntrinsicMatrix <<std::endl;
+			std::cout << Distortion << std::endl;
+
+			// 计算外参
+			getCameraExtrinsics(1, calHcam, image_path, IntrinsicMatrix, Distortion);
+			std::cout << calHcam << std::endl;
+
+			double mat_[16] = {
+				calHcam.Get(1, 1), calHcam.Get(1, 5), calHcam.Get(1, 9), calHcam.Get(1, 13),
+				calHcam.Get(1, 2), calHcam.Get(1, 6), calHcam.Get(1, 10), calHcam.Get(1, 14),
+				calHcam.Get(1, 3), calHcam.Get(1, 7), calHcam.Get(1, 11), calHcam.Get(1, 15),
+				calHcam.Get(1, 4), calHcam.Get(1, 8), calHcam.Get(1, 12), calHcam.Get(1, 16) };
+
+			external_mat = cv::Mat(4, 4, CV_64FC1, mat_);
+			std::cout << external_mat << std::endl;
+		}
+		catch (const mwException& e) {
+			std::cerr << e.what() << std::endl;
+			return false;
+		}
+		catch (...) {
+			std::cerr << "Unexpected error thrown" << std::endl;
+			return false;
+		}
+
+		getCameraExtrinsics_64Terminate();
+	}
+
+	mclTerminateApplication();
+
+	return true;
+}
+
+
+
 // 计算相机内参
 void CameraCalibration::internal_reference_calibration(std::string img_path, std::string internal_file, Camera_Intrinsics& cam_in, double distCoeffD[5]) {
 	//ifstream fin("calibdata.txt"); /* 标定所用图像文件的路径 */
@@ -285,7 +383,7 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 	std::cout << "开始提取角点………………";
 	int image_count = 0;  /* 图像数量 */
 	cv::Size image_size;  /* 图像的尺寸 */
-	cv::Size board_size = cv::Size(11, 8);    /* 标定板上每行、列的角点数 */
+	cv::Size board_size = chessboard_size; // cv::Size(9, 6);    /* 标定板上每行、列的角点数 */
 	std::vector<cv::Point2f> image_points_buf;  /* 缓存每幅图像上检测到的角点 */
 	std::vector<std::vector<cv::Point2f>> image_points_seq; /* 保存检测到的所有角点 */
 
@@ -355,7 +453,7 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 	//以下是摄像机标定
 	std::cout << "开始标定………………";
 	/*棋盘三维信息*/
-	cv::Size square_size = cv::Size(2, 2);  /* 实际测量得到的标定板上每个棋盘格的大小 cm*/
+	cv::Size square_size = cv::Size(markerRealSize, markerRealSize);  /* 实际测量得到的标定板上每个棋盘格的大小 cm*/
 	std::vector<std::vector<cv::Point3f>> object_points; /* 保存标定板上角点的三维坐标 */
 										   /*内外参数*/
 	cv::Mat cameraMatrix = cv::Mat(3, 3, CV_32FC1, cv::Scalar::all(0)); /* 摄像机内参数矩阵 */
@@ -487,3 +585,72 @@ void CameraCalibration::internal_reference_calibration(std::string img_path, std
 	for(int i=0; i<distCoeffs.cols; i++)
 		distCoeffD[i] = distCoeffs.at<double>(0,i);
 }
+
+
+// 计算相机内参 MATLAB
+void CameraCalibration::internal_reference_calibration_MATLAB(std::string img_files, std::string internal_file, Camera_Intrinsics& cam_in, double distCoeffD[5])
+{
+	if (!mclInitializeApplication(nullptr, 0)) {
+		std::cerr << "Could not initialize the application properly" << std::endl;
+		return;
+	}
+
+	if (!cameraCalibrator_64Initialize()) {
+		std::cerr << "Could not initialize the library properly" << std::endl;
+		return;
+	}
+	else {
+		try {
+			// 返回值
+			mwArray cameraParams;
+			mwArray IntrinsicMatrix;
+			mwArray Distortion;
+
+			// 输入值
+			mwArray imageFolder(img_files.c_str());
+			int realSize[] = { markerRealSize*10 }; //mm
+			mwArray squareSize(1, 1, mxINT32_CLASS, mxREAL);
+			squareSize.SetData(realSize, 1);
+
+			// std::cout << "imageFolder: " << imageFolder << std::endl;
+			// std::cout << "squareSize: " << squareSize << std::endl;
+
+			// 计算内参
+			cameraCalibrator(3, cameraParams, IntrinsicMatrix, Distortion, imageFolder, squareSize);
+			std::cout << IntrinsicMatrix << std::endl;
+			std::cout << Distortion << std::endl;
+
+			std::ofstream fout(internal_file);  /* 保存标定结果的文件 */
+			fout << "相机内参数矩阵：" << std::endl;
+			fout << IntrinsicMatrix << std::endl << std::endl;
+			fout << "畸变系数：\n";
+			fout << Distortion << std::endl << std::endl << std::endl;
+			fout.close();
+
+			cam_in.FLX = IntrinsicMatrix.Get(1, 1);
+			cam_in.FLY = IntrinsicMatrix.Get(1, 5);
+			cam_in.PPX = IntrinsicMatrix.Get(1, 7);
+			cam_in.PPY = IntrinsicMatrix.Get(1, 8);
+
+			distCoeffD[0] = Distortion.Get(1, 1);
+			distCoeffD[1] = Distortion.Get(1, 2);
+			distCoeffD[2] = Distortion.Get(1, 3);
+			distCoeffD[3] = Distortion.Get(1, 4);
+			distCoeffD[4] = Distortion.Get(1, 5);
+		}
+		catch (const mwException& e) {
+			std::cerr << e.what() << std::endl;
+			return;
+		}
+		catch (...) {
+			std::cerr << "Unexpected error thrown" << std::endl;
+			return;
+		}
+
+		cameraCalibrator_64Terminate();
+	}
+
+	mclTerminateApplication();
+
+}
+
