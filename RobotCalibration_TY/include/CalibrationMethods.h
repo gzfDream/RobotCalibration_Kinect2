@@ -19,12 +19,15 @@ public:
 
 public:
 
+
 	/*
-	*	@brief		计算相机到机械臂的变换矩阵(棋盘格固定在相机)
-	*	@param		robot		机械臂末端不同位置对应变换矩阵 baseHend
-	*   @param		cam_cal		相机到棋盘格变换矩阵 calHcam
-	*   @param		result_file	结果保存文件
-	*   @return		返回相机到机械臂坐标系变换矩阵 robHcam
+	*	@Method		Method_BoardOnRobot
+	*	@brief  	计算相机到机械臂的变换矩阵(棋盘格固定在相机)
+	*	@param		std::string robot			机械臂末端不同位置对应变换矩阵 baseHend
+	*	@param		std::string cam_cal			相机到棋盘格变换矩阵 calHcam
+	*	@param		std::string result_file		结果保存文件
+	*	@param		cv::Mat & m_result			返回相机到机械臂坐标系变换矩阵 robHcam
+	*	@return		void
 	*/
 	void Method_BoardOnRobot(std::string robot, std::string cam_cal, std::string result_file, cv::Mat& m_result);
 
@@ -47,7 +50,7 @@ public:
 	*   @param		camera_ins_H 相机内参
 	*	@return					返回相机到机械臂坐标系变换矩阵 baseHcam
 	*/
-	void Method_ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY, cv::Mat camHcal, cv::Mat& baseHcam);
+	void Method_ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY, cv::Mat calHcam, cv::Mat& baseHcam);
 
 
 	/*

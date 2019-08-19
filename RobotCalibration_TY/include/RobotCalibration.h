@@ -215,6 +215,16 @@ static void CalibrationFunc() {
 			c.Calibration_PrecisionTest(baseHcam_, endHcal_, camera_ins_H, distCoeffD);
 			break;
 		}
+
+		case 'm': {
+			// 初始化相机
+			ImgProcess_TY::getImage(cam_cal_file, true);
+
+			cv::Mat baseHcam = readTXT2Mat(baseHcam_file);
+			// 求得棋盘格某几个角点的位置,待实现或者移植到robot_control中实现
+			cv::Matx41d corn_point;
+			cv::Mat point_robot = baseHcam * corn_point;
+		}
 			
 		case 'q':
 			running = false;

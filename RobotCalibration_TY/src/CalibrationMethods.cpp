@@ -346,14 +346,15 @@ void CalibrationMethods::Method_BoardOnRobot(std::string robot, std::string cam_
 }
 
 
-void CalibrationMethods::Method_ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY, cv::Mat camHcal, cv::Mat& baseHcam)
+void CalibrationMethods::Method_ThreePointsCalibration(cv::Point3d pointO, cv::Point3d pointX, cv::Point3d pointXOY, cv::Mat calHcam, cv::Mat& baseHcam)
 {
 	cv::Mat baseHcal = ThreePointsCalibration(pointO, pointX, pointXOY);
 
 	// cv::Mat baseHcam;
-	baseHcam = baseHcal * (camHcal.inv());
+	baseHcam = baseHcal * calHcam;
 	return;
 }
+
 
 void CalibrationMethods::eigenMat2mwArray(const Eigen::Matrix4d& m1, mwArray& arr) {
 	Eigen::Matrix4d m = m1.transpose();
