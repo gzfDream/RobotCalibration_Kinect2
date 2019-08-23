@@ -28,19 +28,19 @@ public:
 	* @param	url		服务器IP和端口
 	* @param	rgb_image_path	颜色图路径
 	* @param	depth_image_path	深度图路径
-	* @param	box_points		待抓取物体包围盒(4*cv::Point)+吸盘位置包围盒(4*cv::Point)
+	* @param	box_points		吸盘位置包围盒(4*cv::Point) + 待抓取物体包围盒(4*cv::Point) (std::pair)
 	* @return	url初始化失败返回 0；连接失败返回 -1； 成功返回数据长度
 	*/
-	static int start_predict(char *url, char *rgb_image_path, char *depth_image_path, std::vector<cv::Point>& box_points);
+	static int start_predict(char *url, char *rgb_image_path, char *depth_image_path, std::pair<std::vector<cv::Point>, std::vector<cv::Point>>& box_points);
 
 private:
 	/*
 	* @brief	json解析
 	* @param	strJsonContent		服务器返回（string）
-	* @param	vec_points			待抓取物体包围盒(4*cv::Point)+吸盘位置包围盒(4*cv::Point)
+	* @param	vec_points			吸盘位置包围盒(4*cv::Point) + 待抓取物体包围盒(4*cv::Point) (std::pair)
 	* @return	解析成功返回true，否则返回false
 	*/
-	static bool parseStrJson(std::string strJsonContent, std::vector<cv::Point>& vec_points);
+	static bool parseStrJson(std::string strJsonContent, std::pair<std::vector<cv::Point>, std::vector<cv::Point>>& vec_points);
 
 	/*
 	* @brief	回调函数

@@ -1,7 +1,6 @@
 #include "ImgProcess_TY.h"
 
-ImgProcess_TY::ImgProcess_TY(const Camera_Intrinsics& cam_in_) {
-	cam_in = cam_in_;
+ImgProcess_TY::ImgProcess_TY() {
 }
 ImgProcess_TY::~ImgProcess_TY() {
 }
@@ -186,15 +185,15 @@ void ImgProcess_TY::getImage(std::string url, std::string img_path) {
 				// ================预测抓取点==================
 
 				// ================测试深度==================
-				double de = 0.;
-				cv::Point p_1(450, 450);
-				getPixelDepth(p_1, depth_path, de);
-				std::cout << "depth: " << de << std::endl;
-				
-				cv::Point2d vec_xy;
-				ImgPixel2CameraPosition(p_1, vec_xy);
-				std::cout << "x: " << de * vec_xy.x << ", y: " << de * vec_xy.y << std::endl;
-				// ================测试深度==================
+				//double de = 0.;
+				//cv::Point p_1(450, 450);
+				//getPixelDepth(p_1, depth_path, de);
+				//std::cout << "depth: " << de << std::endl;
+				//
+				//cv::Point2d vec_xy;
+				//ImgPixel2CameraPosition(p_1, vec_xy);
+				//std::cout << "x: " << de * vec_xy.x << ", y: " << de * vec_xy.y << std::endl;
+				//// ================测试深度==================
 
 				LOGD("Get frame %d", saveIdx++);
 				saveFrame = false;
@@ -235,46 +234,6 @@ void ImgProcess_TY::getImage(std::string url, std::string img_path) {
 	
 }
 
-
-bool ImgProcess_TY::getPixelDepth(cv::Point pixel, std::string depth_path, double &depth) {
-	cv::Mat deoth_image = cv::imread(depth_path, CV_16U);
-	if (deoth_image.type() != CV_16U || deoth_image.total() == 0) {
-		std::cout << "error: 图片未找到！" << std::endl;
-		return false;
-	}
-	double depth_scale_unit = 0.001;
-	depth = deoth_image.at<cv::uint16_t>(pixel.x, pixel.y)*depth_scale_unit;
-
-	return true;
-}
-
-
-void ImgProcess_TY::ImgPixel2CameraPosition(const cv::Point& pixel, cv::Point2d& camera_xy) {
-	// 参考链接：https://blog.csdn.net/xholes/article/details/80599802
-	//相机内参
-	/*
-	Eigen::MatrixXd camera_ins = Eigen::MatrixXd::Zero(3, 4);
-	camera_ins << cam_in.FLX, 0, cam_in.PPX, 0,
-		0, cam_in.FLY, cam_in.PPY, 0,
-		0, 0, 1, 0;
-	std::cout << "camera_ins:" << camera_ins << std::endl;
-	*/
-		
-	cv::Point2d p;
-	p.x = (pixel.x - cam_in.PPX) / cam_in.FLX;
-	p.y = (pixel.y - cam_in.PPY) / cam_in.FLY;
-
-	// std::cout << "p.x: " << p.x << std::endl;
-	// std::cout << "p.y: " << p.y << std::endl;
-
-	double r_2 = p.x*p.x + p.y*p.y;
-	cv::Point2d p_ = (1 + cam_in.distCoeffD[0] * r_2 + cam_in.distCoeffD[1] * r_2*r_2 + cam_in.distCoeffD[2] * pow(r_2, 3)) * p
-		+ cv::Point2d(2 * cam_in.distCoeffD[3] * p.x*p.y + cam_in.distCoeffD[4] * (r_2 + 2 * p.x*p.x),
-			2 * cam_in.distCoeffD[3] * (r_2 + 2 * p.y*p.y) + 2 * cam_in.distCoeffD[4] * p.x *p.y);
-
-	camera_xy = p_;
-
-}
 
 
 

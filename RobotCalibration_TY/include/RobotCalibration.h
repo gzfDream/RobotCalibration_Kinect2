@@ -71,7 +71,7 @@ static void CalibrationFunc() {
 	std::string endHcal_file = ".\\data\\endHcal.txt";
 
 	double markerRealSize = 2;//cm
-	CameraCalibration cal = CameraCalibration(markerRealSize, cv::Size(9, 6));
+	CameraCalibration cal = CameraCalibration(markerRealSize, cv::Size(11, 8));
 
 	//相机内参
 	Camera_Intrinsics camera_ins_H;
@@ -110,8 +110,8 @@ static void CalibrationFunc() {
 			// ImgProcess_TY::getImage(img_internal_file, false);
 
 			std::cout << "-*-*-*-*-开始计算相机内参-*-*-*-*-" << endl;
-			// cal.internal_reference_calibration(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
-			cal.internal_reference_calibration_MATLAB(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
+			cal.internal_reference_calibration(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
+			// cal.internal_reference_calibration_MATLAB(img_internal_file, cam_internal_file, camera_ins_H, distCoeffD);
 			break;
 		}
 

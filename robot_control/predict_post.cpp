@@ -10,7 +10,7 @@ Predict_Post::~Predict_Post()
 }
 
 
-bool Predict_Post::parseStrJson(std::string strJsonContent, std::vector<cv::Point>& vec_points) {
+bool Predict_Post::parseStrJson(std::string strJsonContent, std::pair<std::vector<cv::Point>, std::vector<cv::Point>>& vec_points) {
 	Json::Reader reader;
 	Json::Value root;
 	bool show_not = true;
@@ -19,42 +19,50 @@ bool Predict_Post::parseStrJson(std::string strJsonContent, std::vector<cv::Poin
 	if (reader.parse(strJsonContent, root))
 	{
 		cv::Point p0;
+
+		//////////////////////////////////////////////////////////////////////////
+		// 物体表面点
 		p0.x = std::stoi(root["ori_p0_x"].asString());
 		p0.y = std::stoi(root["ori_p0_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.second.push_back(p0);
 
 		p0.x = std::stoi(root["ori_p1_x"].asString());
 		p0.y = std::stoi(root["ori_p1_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.second.push_back(p0);
 
 		p0.x = std::stoi(root["ori_p2_x"].asString());
 		p0.y = std::stoi(root["ori_p2_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.second.push_back(p0);
 
 		p0.x = std::stoi(root["ori_p3_x"].asString());
 		p0.y = std::stoi(root["ori_p3_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.second.push_back(p0);
+
+		//////////////////////////////////////////////////////////////////////////
 
 		p0.x = std::stoi(root["pre_p0_x"].asString());
 		p0.y = std::stoi(root["pre_p0_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.first.push_back(p0);
 
 		p0.x = std::stoi(root["pre_p1_x"].asString());
 		p0.y = std::stoi(root["pre_p1_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.first.push_back(p0);
 
 		p0.x = std::stoi(root["pre_p2_x"].asString());
 		p0.y = std::stoi(root["pre_p2_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.first.push_back(p0);
 
 		p0.x = std::stoi(root["pre_p3_x"].asString());
 		p0.y = std::stoi(root["pre_p3_y"].asString());
-		vec_points.push_back(p0);
+		vec_points.first.push_back(p0);
 
 		state = root["state"].asBool();
 		if (show_not) {
-			for (int i = 0; i < vec_points.size(); ++i) {
-				std::cout << vec_points[i] << std::endl;
+			for (int i = 0; i < vec_points.first.size(); ++i) {
+				std::cout << vec_points.first[i] << std::endl;
+			}
+			for (int i = 0; i < vec_points.second.size(); ++i) {
+				std::cout << vec_points.second[i] << std::endl;
 			}
 
 			std::cout << "state is: " << state << std::endl;
@@ -91,7 +99,7 @@ size_t Predict_Post::post_return(char *contents, size_t size, size_t nmemb, void
 }
 
 
-int Predict_Post::start_predict(char *url, char *rgb_image_path, char *depth_image_path, std::vector<cv::Point>& box_points)
+int Predict_Post::start_predict(char *url, char *rgb_image_path, char *depth_image_path, std::pair<std::vector<cv::Point>, std::vector<cv::Point>>& box_points)
 {
 	MemoryStruct chunk;
 	chunk.memory = (char*)malloc(1);  /* will be grown as needed by the realloc above */

@@ -24,6 +24,9 @@
     <ClCompile Include="predict_post.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="include\Grasp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Grasp.h">
