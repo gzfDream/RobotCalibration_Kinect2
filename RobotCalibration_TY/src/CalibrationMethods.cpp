@@ -80,7 +80,7 @@ static Eigen::Vector3d cvPoint3d_eigenVector3d(cv::Point3d p) {
 	return res;
 }
 
-
+ 
 //优化的手眼标定Ax=xB
 Mat CalibrationMethods::HandEyeMethod(const vector<Mat>Hgij, const vector<Mat>Hcij)
 {
